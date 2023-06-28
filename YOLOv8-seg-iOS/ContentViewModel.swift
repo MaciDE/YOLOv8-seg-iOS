@@ -129,11 +129,12 @@ extension ContentViewModel {
         predictions.removeAll { $0.score < 0.8 }
         
         NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.8")
-        NSLog("Perform non maximum suppression")
         
         guard !predictions.isEmpty else {
             return
         }
+        
+        NSLog("Perform non maximum suppression")
         
         // Group predictions by class
         let groupedPredictions = Dictionary(grouping: predictions) { prediction in
@@ -218,11 +219,12 @@ extension ContentViewModel {
             predictions.removeAll { $0.score < 0.8 }
             
             NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.8")
-            NSLog("Perform non maximum suppression")
             
             guard !predictions.isEmpty else {
                 return
             }
+            
+            NSLog("Perform non maximum suppression")
             
             // Group predictions by class
             let groupedPredictions = Dictionary(grouping: predictions) { prediction in
@@ -389,11 +391,12 @@ extension ContentViewModel {
         predictions.removeAll { $0.score < 0.8 }
         
         NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.8")
-        NSLog("Perform non maximum suppression")
         
         guard !predictions.isEmpty else {
             return
         }
+        
+        NSLog("Perform non maximum suppression")
         
         // Group predictions by class
         let groupedPredictions = Dictionary(grouping: predictions) { prediction in
@@ -521,11 +524,12 @@ extension ContentViewModel {
         predictions.removeAll { $0.score < 0.3 }
         
         NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
-        NSLog("Perform non maximum suppression")
         
         guard !predictions.isEmpty else {
             return
         }
+        
+        NSLog("Perform non maximum suppression")
         
         // Group predictions by class
         let groupedPredictions = Dictionary(grouping: predictions) { prediction in
@@ -594,15 +598,17 @@ extension ContentViewModel {
             let width   = Float(truncating: output[2*columns+i])
             let height  = Float(truncating: output[3*columns+i])
             
-            let score = {
+            let (classIndex, score) = {
+                var classIndex: Int = 0
                 var heighestScore: Float = 0
                 for j in 0..<numberOfClasses {
                     let score = Float(truncating: output[(4+j)*columns+i])
                     if score > heighestScore {
                         heighestScore = score
+                        classIndex = j
                     }
                 }
-                return heighestScore
+                return (classIndex, heighestScore)
             }()
             
             let maskScores = {
@@ -620,7 +626,7 @@ extension ContentViewModel {
             let bottom = centerY + height/2
             
             let prediction = Prediction(
-                classIndex: 0, // Todo
+                classIndex: classIndex,
                 score: score,
                 xyxy: (left, top, right, bottom),
                 maskScores: maskScores,
