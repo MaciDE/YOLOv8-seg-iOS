@@ -74,7 +74,7 @@ extension ContentViewModel {
         
         let config = MLModelConfiguration()
         
-        guard let model = try? YOLOv8n_ulcus_18_05_23(configuration: config) else {
+        guard let model = try? YOLOv8n_coco128_seg_06_05_23(configuration: config) else {
             NSLog("Failed to init model")
             return
         }
@@ -91,7 +91,7 @@ extension ContentViewModel {
             return
         }
     
-        let outputs: YOLOv8n_ulcus_18_05_23Output
+        let outputs: YOLOv8n_coco128_seg_06_05_23Output
             
         do {
             outputs = try model.prediction(image: pixelBuffer)
@@ -101,7 +101,7 @@ extension ContentViewModel {
         }
         
         // Boxes
-        let var_1052 = outputs.var_1052 // (1,37,1344)
+        let var_1052 = outputs.var_1053 // (1,37,1344)
         // Masks
         let p = outputs.p // (1,32,64,64)
         
@@ -131,13 +131,29 @@ extension ContentViewModel {
         NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.8")
         NSLog("Perform non maximum suppression")
         
-        // perform nms
-        let nmsPredictions = nonMaximumSuppression(
-            predictions: predictions,
-            iouThreshold: 0.8,
-            limit: 100)
+        guard !predictions.isEmpty else {
+            return
+        }
         
-        NSLog("\(nmsPredictions.count) boxes left after performing nms with iou threshold of 0.8")
+        // Group predictions by class
+        let groupedPredictions = Dictionary(grouping: predictions) { prediction in
+            prediction.classIndex
+        }
+        
+        var nmsPredictions: [Prediction] = []
+        let _ = groupedPredictions.mapValues { predictions in
+            nmsPredictions.append(
+                contentsOf: nonMaximumSuppression(
+                    predictions: predictions,
+                    iouThreshold: 0.6,
+                    limit: 100))
+        }
+        
+        NSLog("\(nmsPredictions.count) boxes left after performing nms with iou threshold of 0.6")
+        
+        guard !nmsPredictions.isEmpty else {
+            return
+        }
         
         self.predictions = nmsPredictions
         
@@ -201,14 +217,32 @@ extension ContentViewModel {
             // remove predictions with confidence score lower than threshold
             predictions.removeAll { $0.score < 0.8 }
             
-            // perform nms
-            let nmsPredictions = nonMaximumSuppression(
-                predictions: predictions,
-                iouThreshold: 0.8,
-                limit: 100)
-            
             NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.8")
             NSLog("Perform non maximum suppression")
+            
+            guard !predictions.isEmpty else {
+                return
+            }
+            
+            // Group predictions by class
+            let groupedPredictions = Dictionary(grouping: predictions) { prediction in
+                prediction.classIndex
+            }
+            
+            var nmsPredictions: [Prediction] = []
+            let _ = groupedPredictions.mapValues { predictions in
+                nmsPredictions.append(
+                    contentsOf: nonMaximumSuppression(
+                        predictions: predictions,
+                        iouThreshold: 0.6,
+                        limit: 100))
+            }
+            
+            NSLog("\(nmsPredictions.count) boxes left after performing nms with iou threshold of 0.6")
+            
+            guard !nmsPredictions.isEmpty else {
+                return
+            }
             
             self.predictions = nmsPredictions
             
@@ -361,11 +395,25 @@ extension ContentViewModel {
             return
         }
         
-        // perform nms
-        let nmsPredictions = nonMaximumSuppression(
-            predictions: predictions,
-            iouThreshold: 0.8,
-            limit: 100)
+        // Group predictions by class
+        let groupedPredictions = Dictionary(grouping: predictions) { prediction in
+            prediction.classIndex
+        }
+        
+        var nmsPredictions: [Prediction] = []
+        let _ = groupedPredictions.mapValues { predictions in
+            nmsPredictions.append(
+                contentsOf: nonMaximumSuppression(
+                    predictions: predictions,
+                    iouThreshold: 0.6,
+                    limit: 100))
+        }
+        
+        NSLog("\(nmsPredictions.count) boxes left after performing nms with iou threshold of 0.6")
+        
+        guard !nmsPredictions.isEmpty else {
+            return
+        }
         
         self.predictions = nmsPredictions
     
@@ -484,7 +532,6 @@ extension ContentViewModel {
             prediction.classIndex
         }
         
-        // TODO: Perform nms on prediction groups
         var nmsPredictions: [Prediction] = []
         let _ = groupedPredictions.mapValues { predictions in
             nmsPredictions.append(
@@ -524,10 +571,6 @@ extension ContentViewModel {
 }
 
 func sigmoid(value: Float) -> Float {
-    return 1.0 / (1.0 + exp(-value))
-}
-
-func sigmoid(value: Double) -> Double {
     return 1.0 / (1.0 + exp(-value))
 }
 
@@ -635,8 +678,8 @@ extension ContentViewModel {
             let bottom = centerY + height/2
             
             let prediction = Prediction(
-                classIndex: classIndex, // Todo
-                score: score,// Float(truncating: output[4*columns+i]),
+                classIndex: classIndex,
+                score: score,
                 xyxy: (left, top, right, bottom),
                 maskScores: maskScores,
                 inputImgSize: inputImgSize
@@ -699,7 +742,7 @@ extension ContentViewModel {
             
             var finalMask: [Float] = []
             for (index, maskProto) in maskProtos.enumerated() {
-                // mutiplicate mask proto with weight value
+                // multiply mask proto with weight value
                 let weight = maskProtoScores[index]
                 finalMask = finalMask.add(maskProto.map { Float($0) * weight })
             }
