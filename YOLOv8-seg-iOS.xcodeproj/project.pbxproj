@@ -1,0 +1,562 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3BBA95DF2685CD0CF8507D19 /* Pods_YOLOv8_seg_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66FD704C5356EFFC5071E8D0 /* Pods_YOLOv8_seg_iOS.framework */; };
+		EA1F2F252A3DDEC800A3202F /* YOLOv8n_coco128_seg_06_05_23.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = EA1F2F242A3DDEC800A3202F /* YOLOv8n_coco128_seg_06_05_23.mlmodel */; };
+		EA33A2012A24BBEA00B32B68 /* YOLOv8n_ulcus_18-05-23.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = EA33A2002A24BBEA00B32B68 /* YOLOv8n_ulcus_18-05-23.mlmodel */; };
+		EA33A2032A24BEC300B32B68 /* CGImage+pixelBufferFromCGImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA33A2022A24BEC300B32B68 /* CGImage+pixelBufferFromCGImage.swift */; };
+		EA3CBB712A31F1C00037750B /* Array+Subscript.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA3CBB702A31F1C00037750B /* Array+Subscript.swift */; };
+		EA4129052A35A4F8002E5D66 /* Array+Chunked.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA4129042A35A4F8002E5D66 /* Array+Chunked.swift */; };
+		EA500EAE2A4C3FCD000AD60A /* Array+Add.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA500EAD2A4C3FCD000AD60A /* Array+Add.swift */; };
+		EA500EB02A4C5F6C000AD60A /* UIColor+Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA500EAF2A4C5F6C000AD60A /* UIColor+Random.swift */; };
+		EA500EB22A4C7614000AD60A /* yolov8n-seg.torchscript in Resources */ = {isa = PBXBuildFile; fileRef = EA500EB12A4C7614000AD60A /* yolov8n-seg.torchscript */; };
+		EA726EF92A177FAC0027A1E2 /* Array+initFromUnsafeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA726EF82A177FAC0027A1E2 /* Array+initFromUnsafeData.swift */; };
+		EA95A3D72A169BE300FF01B3 /* ContentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA95A3D62A169BE300FF01B3 /* ContentViewModel.swift */; };
+		EA95A3DC2A16A4B300FF01B3 /* UIImage+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA95A3DB2A16A4B300FF01B3 /* UIImage+Helpers.swift */; };
+		EA95A3E62A16A64600FF01B3 /* InferenceModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = EA95A3E52A16A64600FF01B3 /* InferenceModule.mm */; };
+		EA95A3E82A16AB7300FF01B3 /* YOLOv8n_ulcus_18-05-23.torchscript.ptl in Resources */ = {isa = PBXBuildFile; fileRef = EA95A3E72A16AB7300FF01B3 /* YOLOv8n_ulcus_18-05-23.torchscript.ptl */; };
+		EA9FD0C62A3F631000EA9425 /* yolov8n-seg_coco128_float16.tflite in Resources */ = {isa = PBXBuildFile; fileRef = EA9FD0C52A3F631000EA9425 /* yolov8n-seg_coco128_float16.tflite */; };
+		EA9FD0C82A3F642100EA9425 /* yolov8s-seg_coco128_float16.tflite in Resources */ = {isa = PBXBuildFile; fileRef = EA9FD0C72A3F642100EA9425 /* yolov8s-seg_coco128_float16.tflite */; };
+		EA9FD0CA2A3F651300EA9425 /* yolov8m-seg_coco128_float16.tflite in Resources */ = {isa = PBXBuildFile; fileRef = EA9FD0C92A3F651300EA9425 /* yolov8m-seg_coco128_float16.tflite */; };
+		EAA8E6B22A2DF47B00A47F96 /* DetectionLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAA8E6B12A2DF47B00A47F96 /* DetectionLayer.swift */; };
+		EAA8E6B52A2DF4E000A47F96 /* DetectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAA8E6B42A2DF4E000A47F96 /* DetectionView.swift */; };
+		EAA8E6B72A2DF71C00A47F96 /* AnnotationLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAA8E6B62A2DF71C00A47F96 /* AnnotationLayer.swift */; };
+		EAAB5B6B2A376008003A9699 /* YOLOv8n_ulcus_18-05-23_float16.tflite in Resources */ = {isa = PBXBuildFile; fileRef = EAAB5B6A2A376008003A9699 /* YOLOv8n_ulcus_18-05-23_float16.tflite */; };
+		EAB9CECF2A484A0F006345C2 /* Prediction.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAB9CECE2A484A0F006345C2 /* Prediction.swift */; };
+		EAB9CED12A484A23006345C2 /* MaskPrediction.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAB9CED02A484A23006345C2 /* MaskPrediction.swift */; };
+		EAEE0BB52A4A095A00624C41 /* yolov8l-seg_coco128_float16.tflite in Resources */ = {isa = PBXBuildFile; fileRef = EAEE0BB42A4A095A00624C41 /* yolov8l-seg_coco128_float16.tflite */; };
+		EAF9F1DD2A168CC400D3DF49 /* DemoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAF9F1DC2A168CC400D3DF49 /* DemoApp.swift */; };
+		EAF9F1DF2A168CC400D3DF49 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAF9F1DE2A168CC400D3DF49 /* ContentView.swift */; };
+		EAF9F1E12A168CC600D3DF49 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EAF9F1E02A168CC600D3DF49 /* Assets.xcassets */; };
+		EAF9F1E42A168CC600D3DF49 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EAF9F1E32A168CC600D3DF49 /* Preview Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0A0603FB0047B078B06750C9 /* Pods-YOLOv8-seg-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YOLOv8-seg-iOS.release.xcconfig"; path = "Target Support Files/Pods-YOLOv8-seg-iOS/Pods-YOLOv8-seg-iOS.release.xcconfig"; sourceTree = "<group>"; };
+		37CA6BAE7D4DA36801979C88 /* Pods-YOLOv8-seg-iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YOLOv8-seg-iOS.debug.xcconfig"; path = "Target Support Files/Pods-YOLOv8-seg-iOS/Pods-YOLOv8-seg-iOS.debug.xcconfig"; sourceTree = "<group>"; };
+		66FD704C5356EFFC5071E8D0 /* Pods_YOLOv8_seg_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_YOLOv8_seg_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		EA1F2F242A3DDEC800A3202F /* YOLOv8n_coco128_seg_06_05_23.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = YOLOv8n_coco128_seg_06_05_23.mlmodel; sourceTree = "<group>"; };
+		EA33A2002A24BBEA00B32B68 /* YOLOv8n_ulcus_18-05-23.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "YOLOv8n_ulcus_18-05-23.mlmodel"; sourceTree = "<group>"; };
+		EA33A2022A24BEC300B32B68 /* CGImage+pixelBufferFromCGImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGImage+pixelBufferFromCGImage.swift"; sourceTree = "<group>"; };
+		EA3CBB702A31F1C00037750B /* Array+Subscript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Subscript.swift"; sourceTree = "<group>"; };
+		EA4129042A35A4F8002E5D66 /* Array+Chunked.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Chunked.swift"; sourceTree = "<group>"; };
+		EA500EAD2A4C3FCD000AD60A /* Array+Add.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Add.swift"; sourceTree = "<group>"; };
+		EA500EAF2A4C5F6C000AD60A /* UIColor+Random.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Random.swift"; sourceTree = "<group>"; };
+		EA500EB12A4C7614000AD60A /* yolov8n-seg.torchscript */ = {isa = PBXFileReference; lastKnownFileType = file; path = "yolov8n-seg.torchscript"; sourceTree = "<group>"; };
+		EA726EF82A177FAC0027A1E2 /* Array+initFromUnsafeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+initFromUnsafeData.swift"; sourceTree = "<group>"; };
+		EA95A3D62A169BE300FF01B3 /* ContentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentViewModel.swift; sourceTree = "<group>"; };
+		EA95A3DB2A16A4B300FF01B3 /* UIImage+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Helpers.swift"; sourceTree = "<group>"; };
+		EA95A3E32A16A64100FF01B3 /* YOLOv8-seg-iOS-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "YOLOv8-seg-iOS-Bridging-Header.h"; sourceTree = "<group>"; };
+		EA95A3E42A16A64400FF01B3 /* InferenceModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InferenceModule.h; sourceTree = "<group>"; };
+		EA95A3E52A16A64600FF01B3 /* InferenceModule.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = InferenceModule.mm; sourceTree = "<group>"; };
+		EA95A3E72A16AB7300FF01B3 /* YOLOv8n_ulcus_18-05-23.torchscript.ptl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "YOLOv8n_ulcus_18-05-23.torchscript.ptl"; sourceTree = "<group>"; };
+		EA9FD0C52A3F631000EA9425 /* yolov8n-seg_coco128_float16.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "yolov8n-seg_coco128_float16.tflite"; sourceTree = "<group>"; };
+		EA9FD0C72A3F642100EA9425 /* yolov8s-seg_coco128_float16.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "yolov8s-seg_coco128_float16.tflite"; sourceTree = "<group>"; };
+		EA9FD0C92A3F651300EA9425 /* yolov8m-seg_coco128_float16.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "yolov8m-seg_coco128_float16.tflite"; sourceTree = "<group>"; };
+		EAA8E6B12A2DF47B00A47F96 /* DetectionLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionLayer.swift; sourceTree = "<group>"; };
+		EAA8E6B42A2DF4E000A47F96 /* DetectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionView.swift; sourceTree = "<group>"; };
+		EAA8E6B62A2DF71C00A47F96 /* AnnotationLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationLayer.swift; sourceTree = "<group>"; };
+		EAAB5B6A2A376008003A9699 /* YOLOv8n_ulcus_18-05-23_float16.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "YOLOv8n_ulcus_18-05-23_float16.tflite"; sourceTree = "<group>"; };
+		EAB9CECE2A484A0F006345C2 /* Prediction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Prediction.swift; sourceTree = "<group>"; };
+		EAB9CED02A484A23006345C2 /* MaskPrediction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskPrediction.swift; sourceTree = "<group>"; };
+		EAEE0BB42A4A095A00624C41 /* yolov8l-seg_coco128_float16.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "yolov8l-seg_coco128_float16.tflite"; sourceTree = "<group>"; };
+		EAF9F1D92A168CC400D3DF49 /* YOLOv8-seg-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "YOLOv8-seg-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		EAF9F1DC2A168CC400D3DF49 /* DemoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoApp.swift; sourceTree = "<group>"; };
+		EAF9F1DE2A168CC400D3DF49 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		EAF9F1E02A168CC600D3DF49 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		EAF9F1E32A168CC600D3DF49 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		EAF9F1D62A168CC400D3DF49 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3BBA95DF2685CD0CF8507D19 /* Pods_YOLOv8_seg_iOS.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		905BD9EC6309B5E65B304CAA /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				37CA6BAE7D4DA36801979C88 /* Pods-YOLOv8-seg-iOS.debug.xcconfig */,
+				0A0603FB0047B078B06750C9 /* Pods-YOLOv8-seg-iOS.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		AB70B5322DCC167808CA7586 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				66FD704C5356EFFC5071E8D0 /* Pods_YOLOv8_seg_iOS.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		EA4B5AE72A3D99850033F9E7 /* coco128 */ = {
+			isa = PBXGroup;
+			children = (
+				EA500EB12A4C7614000AD60A /* yolov8n-seg.torchscript */,
+				EA1F2F242A3DDEC800A3202F /* YOLOv8n_coco128_seg_06_05_23.mlmodel */,
+			);
+			path = coco128;
+			sourceTree = "<group>";
+		};
+		EA4B5AE82A3D99C10033F9E7 /* ulcus */ = {
+			isa = PBXGroup;
+			children = (
+				EA33A2002A24BBEA00B32B68 /* YOLOv8n_ulcus_18-05-23.mlmodel */,
+				EAAB5B6A2A376008003A9699 /* YOLOv8n_ulcus_18-05-23_float16.tflite */,
+				EA95A3E72A16AB7300FF01B3 /* YOLOv8n_ulcus_18-05-23.torchscript.ptl */,
+			);
+			path = ulcus;
+			sourceTree = "<group>";
+		};
+		EA95A3D82A16A35000FF01B3 /* Detection */ = {
+			isa = PBXGroup;
+			children = (
+				EA95A3DE2A16A51B00FF01B3 /* PyTorch Mobile */,
+				EA95A3D92A16A43F00FF01B3 /* Models */,
+				EAB9CECE2A484A0F006345C2 /* Prediction.swift */,
+				EAB9CED02A484A23006345C2 /* MaskPrediction.swift */,
+			);
+			path = Detection;
+			sourceTree = "<group>";
+		};
+		EA95A3D92A16A43F00FF01B3 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				EAEE0BB42A4A095A00624C41 /* yolov8l-seg_coco128_float16.tflite */,
+				EA9FD0C52A3F631000EA9425 /* yolov8n-seg_coco128_float16.tflite */,
+				EA9FD0C72A3F642100EA9425 /* yolov8s-seg_coco128_float16.tflite */,
+				EA9FD0C92A3F651300EA9425 /* yolov8m-seg_coco128_float16.tflite */,
+				EA4B5AE82A3D99C10033F9E7 /* ulcus */,
+				EA4B5AE72A3D99850033F9E7 /* coco128 */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		EA95A3DA2A16A47E00FF01B3 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				EA95A3DB2A16A4B300FF01B3 /* UIImage+Helpers.swift */,
+				EA726EF82A177FAC0027A1E2 /* Array+initFromUnsafeData.swift */,
+				EA33A2022A24BEC300B32B68 /* CGImage+pixelBufferFromCGImage.swift */,
+				EA3CBB702A31F1C00037750B /* Array+Subscript.swift */,
+				EA4129042A35A4F8002E5D66 /* Array+Chunked.swift */,
+				EA500EAD2A4C3FCD000AD60A /* Array+Add.swift */,
+				EA500EAF2A4C5F6C000AD60A /* UIColor+Random.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		EA95A3DE2A16A51B00FF01B3 /* PyTorch Mobile */ = {
+			isa = PBXGroup;
+			children = (
+				EA95A3E42A16A64400FF01B3 /* InferenceModule.h */,
+				EA95A3E52A16A64600FF01B3 /* InferenceModule.mm */,
+				EA95A3E32A16A64100FF01B3 /* YOLOv8-seg-iOS-Bridging-Header.h */,
+			);
+			path = "PyTorch Mobile";
+			sourceTree = "<group>";
+		};
+		EAA8E6AF2A2DF46300A47F96 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				EAA8E6B02A2DF46800A47F96 /* Layer */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		EAA8E6B02A2DF46800A47F96 /* Layer */ = {
+			isa = PBXGroup;
+			children = (
+				EAA8E6B12A2DF47B00A47F96 /* DetectionLayer.swift */,
+				EAA8E6B42A2DF4E000A47F96 /* DetectionView.swift */,
+				EAA8E6B62A2DF71C00A47F96 /* AnnotationLayer.swift */,
+			);
+			path = Layer;
+			sourceTree = "<group>";
+		};
+		EAF9F1D02A168CC400D3DF49 = {
+			isa = PBXGroup;
+			children = (
+				EAF9F1DB2A168CC400D3DF49 /* YOLOv8-seg-iOS */,
+				EAF9F1DA2A168CC400D3DF49 /* Products */,
+				905BD9EC6309B5E65B304CAA /* Pods */,
+				AB70B5322DCC167808CA7586 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		EAF9F1DA2A168CC400D3DF49 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EAF9F1D92A168CC400D3DF49 /* YOLOv8-seg-iOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		EAF9F1DB2A168CC400D3DF49 /* YOLOv8-seg-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				EAA8E6AF2A2DF46300A47F96 /* Common */,
+				EA95A3DA2A16A47E00FF01B3 /* Extensions */,
+				EA95A3D82A16A35000FF01B3 /* Detection */,
+				EAF9F1DC2A168CC400D3DF49 /* DemoApp.swift */,
+				EAF9F1DE2A168CC400D3DF49 /* ContentView.swift */,
+				EA95A3D62A169BE300FF01B3 /* ContentViewModel.swift */,
+				EAF9F1E02A168CC600D3DF49 /* Assets.xcassets */,
+				EAF9F1E22A168CC600D3DF49 /* Preview Content */,
+			);
+			path = "YOLOv8-seg-iOS";
+			sourceTree = "<group>";
+		};
+		EAF9F1E22A168CC600D3DF49 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				EAF9F1E32A168CC600D3DF49 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		EAF9F1D82A168CC400D3DF49 /* YOLOv8-seg-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EAF9F1E72A168CC600D3DF49 /* Build configuration list for PBXNativeTarget "YOLOv8-seg-iOS" */;
+			buildPhases = (
+				3294A3ABABA3EC6633844A13 /* [CP] Check Pods Manifest.lock */,
+				EAF9F1D52A168CC400D3DF49 /* Sources */,
+				EAF9F1D62A168CC400D3DF49 /* Frameworks */,
+				EAF9F1D72A168CC400D3DF49 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "YOLOv8-seg-iOS";
+			productName = InferencePlayground;
+			productReference = EAF9F1D92A168CC400D3DF49 /* YOLOv8-seg-iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		EAF9F1D12A168CC400D3DF49 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1430;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					EAF9F1D82A168CC400D3DF49 = {
+						CreatedOnToolsVersion = 14.3;
+						LastSwiftMigration = 1430;
+					};
+				};
+			};
+			buildConfigurationList = EAF9F1D42A168CC400D3DF49 /* Build configuration list for PBXProject "YOLOv8-seg-iOS" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = EAF9F1D02A168CC400D3DF49;
+			productRefGroup = EAF9F1DA2A168CC400D3DF49 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				EAF9F1D82A168CC400D3DF49 /* YOLOv8-seg-iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		EAF9F1D72A168CC400D3DF49 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EAAB5B6B2A376008003A9699 /* YOLOv8n_ulcus_18-05-23_float16.tflite in Resources */,
+				EAF9F1E42A168CC600D3DF49 /* Preview Assets.xcassets in Resources */,
+				EAEE0BB52A4A095A00624C41 /* yolov8l-seg_coco128_float16.tflite in Resources */,
+				EA9FD0C62A3F631000EA9425 /* yolov8n-seg_coco128_float16.tflite in Resources */,
+				EA9FD0C82A3F642100EA9425 /* yolov8s-seg_coco128_float16.tflite in Resources */,
+				EA95A3E82A16AB7300FF01B3 /* YOLOv8n_ulcus_18-05-23.torchscript.ptl in Resources */,
+				EAF9F1E12A168CC600D3DF49 /* Assets.xcassets in Resources */,
+				EA9FD0CA2A3F651300EA9425 /* yolov8m-seg_coco128_float16.tflite in Resources */,
+				EA500EB22A4C7614000AD60A /* yolov8n-seg.torchscript in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		3294A3ABABA3EC6633844A13 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-YOLOv8-seg-iOS-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		EAF9F1D52A168CC400D3DF49 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EAF9F1DF2A168CC400D3DF49 /* ContentView.swift in Sources */,
+				EAF9F1DD2A168CC400D3DF49 /* DemoApp.swift in Sources */,
+				EA95A3D72A169BE300FF01B3 /* ContentViewModel.swift in Sources */,
+				EA95A3E62A16A64600FF01B3 /* InferenceModule.mm in Sources */,
+				EA1F2F252A3DDEC800A3202F /* YOLOv8n_coco128_seg_06_05_23.mlmodel in Sources */,
+				EAA8E6B22A2DF47B00A47F96 /* DetectionLayer.swift in Sources */,
+				EA3CBB712A31F1C00037750B /* Array+Subscript.swift in Sources */,
+				EA33A2032A24BEC300B32B68 /* CGImage+pixelBufferFromCGImage.swift in Sources */,
+				EAB9CECF2A484A0F006345C2 /* Prediction.swift in Sources */,
+				EAA8E6B52A2DF4E000A47F96 /* DetectionView.swift in Sources */,
+				EA33A2012A24BBEA00B32B68 /* YOLOv8n_ulcus_18-05-23.mlmodel in Sources */,
+				EA95A3DC2A16A4B300FF01B3 /* UIImage+Helpers.swift in Sources */,
+				EAB9CED12A484A23006345C2 /* MaskPrediction.swift in Sources */,
+				EA500EAE2A4C3FCD000AD60A /* Array+Add.swift in Sources */,
+				EA726EF92A177FAC0027A1E2 /* Array+initFromUnsafeData.swift in Sources */,
+				EA4129052A35A4F8002E5D66 /* Array+Chunked.swift in Sources */,
+				EAA8E6B72A2DF71C00A47F96 /* AnnotationLayer.swift in Sources */,
+				EA500EB02A4C5F6C000AD60A /* UIColor+Random.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		EAF9F1E52A168CC600D3DF49 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		EAF9F1E62A168CC600D3DF49 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		EAF9F1E82A168CC600D3DF49 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 37CA6BAE7D4DA36801979C88 /* Pods-YOLOv8-seg-iOS.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"YOLOv8-seg-iOS/Preview Content\"";
+				DEVELOPMENT_TEAM = UX99LQPM5X;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "de.marcelopitz.YOLOv8-seg-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "YOLOv8-seg-iOS/Detection/PyTorch Mobile/YOLOv8-seg-iOS-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		EAF9F1E92A168CC600D3DF49 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0A0603FB0047B078B06750C9 /* Pods-YOLOv8-seg-iOS.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"YOLOv8-seg-iOS/Preview Content\"";
+				DEVELOPMENT_TEAM = UX99LQPM5X;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "de.marcelopitz.YOLOv8-seg-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "YOLOv8-seg-iOS/Detection/PyTorch Mobile/YOLOv8-seg-iOS-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		EAF9F1D42A168CC400D3DF49 /* Build configuration list for PBXProject "YOLOv8-seg-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EAF9F1E52A168CC600D3DF49 /* Debug */,
+				EAF9F1E62A168CC600D3DF49 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EAF9F1E72A168CC600D3DF49 /* Build configuration list for PBXNativeTarget "YOLOv8-seg-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EAF9F1E82A168CC600D3DF49 /* Debug */,
+				EAF9F1E92A168CC600D3DF49 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = EAF9F1D12A168CC400D3DF49 /* Project object */;
+}
