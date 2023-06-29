@@ -1,14 +1,11 @@
 # YOLOv8-seg-iOS
 YOLOv8 ([Ultralytics](https://github.com/ultralytics/ultralytics)) instance segmentation on iOS using Core ML (WIP), Vision (WIP), TensorFlow Lite, PyTorch Mobile.
 
-<img src="Docs/Images/Example1.png" width="300">
-<img src="Docs/Images/Example2.png" width="300">
-<img src="Docs/Images/Example3.png" width="300">
+<img src="Docs/Images/Example1.png" width="200"> <img src="Docs/Images/Example2.png" width="200"> <img src="Docs/Images/Example3.png" width="200">
 
 ## TODO:
 - Inference using Core ML
 - Inference using Vision
-- Crop masks to bounding box
 
 ## Usage:
 1. Clone repository
