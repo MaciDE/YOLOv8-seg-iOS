@@ -757,10 +757,12 @@ extension ContentViewModel {
             
             let uint8Mask = finalMask.map { UInt8($0) }
             
+            let croppedMask = crop(mask: uint8Mask, maskSize: maskSize, box: prediction.xyxy)
+            
             maskPredictions.append(
                 MaskPrediction(
                     classIndex: prediction.classIndex,
-                    mask: uint8Mask,
+                    mask: croppedMask,
                     maskSize: maskSize,
                     originalImgSize: originalImgSize
                 )
@@ -768,6 +770,32 @@ extension ContentViewModel {
         }
         
         return maskPredictions
+    }
+    
+    private func crop(
+        mask: [UInt8],
+        maskSize: (width: Int, height: Int),
+        box: XYXY
+    ) -> [UInt8] {
+        let rows = maskSize.height
+        let columns = maskSize.width
+        
+        let x1 = Int(box.x1 / 4)
+        let y1 = Int(box.y1 / 4)
+        let x2 = Int(box.x2 / 4)
+        let y2 = Int(box.y2 / 4)
+        
+        var croppedArr: [UInt8] = []
+        for row in 0..<rows {
+            for column in 0..<columns {
+                if column >= x1 && column <= x2 && row >= y1 && row <= y2 {
+                    croppedArr.append(mask[row*columns+column])
+                } else {
+                    croppedArr.append(0)
+                }
+            }
+        }
+        return croppedArr
     }
 }
 
