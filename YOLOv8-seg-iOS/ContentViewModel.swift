@@ -23,7 +23,6 @@ class ContentViewModel: ObservableObject {
     
     @Published var predictions: [Prediction] = []
     @Published var maskPredictions: [MaskPrediction] = []
-    @Published var maskIndices: [Int]?
     
     init() {
         setupBindings()
@@ -560,16 +559,17 @@ extension ContentViewModel {
             columns: masksOutputShapeDim[2],
             tubes: numSegmentationMasks
         )
-        
+
         NSLog("Got \(maskProtos.count) mask protos")
-        
+
+        // High memory footprint ~300 MB
         let maskPredictions = masksFromProtos(
             boxPredictions: nmsPredictions,
             maskProtos: maskProtos,
             maskSize: (width: masksOutputShapeDim[1], height: masksOutputShapeDim[2]),
             originalImgSize: uiImage.size
         )
-        
+
         self.maskPredictions = maskPredictions
     }
 }
@@ -780,10 +780,10 @@ extension ContentViewModel {
         let rows = maskSize.height
         let columns = maskSize.width
         
-        let x1 = Int(box.x1 / 4)
-        let y1 = Int(box.y1 / 4)
-        let x2 = Int(box.x2 / 4)
-        let y2 = Int(box.y2 / 4)
+        let x1 = Int(box.x1 / 4)+1
+        let y1 = Int(box.y1 / 4)+1
+        let x2 = Int(box.x2 / 4)+1
+        let y2 = Int(box.y2 / 4)+1
         
         var croppedArr: [UInt8] = []
         for row in 0..<rows {

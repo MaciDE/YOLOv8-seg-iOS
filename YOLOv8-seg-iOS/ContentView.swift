@@ -108,12 +108,8 @@ struct ContentView: View {
                     VStack(alignment: .center) {
                         Group {
                             if let maskImg = maskPrediction.getMaskImage()?.resized(to: CGSize(width: 256, height: 256)) {
-                                if viewModel.maskIndices?.contains(index) ?? false {
-                                    Image(uiImage: maskImg)
-                                        .border(.red, width: 4)
-                                } else {
-                                    Image(uiImage: maskImg)
-                                }
+                                Image(uiImage: maskImg)
+                                    .background(Color.black)
                             } else {
                                 let _ = print("maskImg is nil")
                             }
@@ -128,17 +124,8 @@ struct ContentView: View {
     @ViewBuilder private func buildMaskOverlay() -> some View {
         ZStack {
             ForEach(Array((viewModel.maskPredictions).enumerated()), id: \.offset) { _, mask in
-                buildMaskImage(
-                    mask: mask.getMaskImage()?
-                        .applyFilter(.init(name: "CIMaskToAlpha")!)
-                        .applyFilter(.init(name: "CIFalseColor",
-                                           parameters: ["inputColor0" : CIColor(color: UIColor.white),
-                                                        "inputColor1": CIColor(color: colors[mask.classIndex])])!)
-                )
-                .opacity(0.7)
+                buildMaskImage(mask: mask.getMaskImage())
             }
         }
     }
 }
-
-let colors = (0..<80).map { _ in UIColor.random }
