@@ -334,18 +334,15 @@ extension ContentViewModel {
     private func runPyTorchInference() {
         guard let uiImage else { return }
         
-        let inputSize = CGSize(width: 256, height: 256)
-        
-//        let boxesOutputShape = [1, 37, 1344]
-//        let masksOutputShape = [1, 64, 64, 32]
-        
+        let inputSize = CGSize(width: 640, height: 640)
+
         let boxesOutputShape = [1, 116, 8400]
-        let masksOutputShape = [1, 160, 160, 32]
-        
+        let masksOutputShape = [1, 32, 160, 160]
+
         NSLog("Start inference using PyTorch Mobile")
-        
+
         guard let modelFilePath = Bundle.main.url(
-            forResource: "YOLOv8n_ulcus_18-05-23.torchscript",
+            forResource: "yolov8l-seg.torchscript",
             withExtension: "ptl"
         )?.path else {
             NSLog("Invalid file path for pytorch model")
@@ -356,8 +353,9 @@ extension ContentViewModel {
             fileAtPath: modelFilePath,
             inputSize: inputSize,
             outputSizes: [
-                boxesOutputShape.reduce(0, +) as NSNumber,
-                masksOutputShape.reduce(0, +) as NSNumber]
+                boxesOutputShape.reduce(1, *) as NSNumber,
+                masksOutputShape.reduce(1, *) as NSNumber
+            ]
         ) else {
             NSLog("Failed to create instance of InferenceModule")
             return
@@ -371,25 +369,30 @@ extension ContentViewModel {
             return
         }
         
-        let boxesOutput = outputs[0] // Shape = (1,37,1344)
-        let masksOutput = outputs[1] // Shape = (1,64,64,32)
+        let boxesOutput = outputs[0] // Shape = (1,116,8400)
+        let masksOutput = outputs[1] // Shape = (1,32,160,160)
+        
+        let numSegmentationMasks = 32
+        let numClasses = boxesOutputShape[1] - 4 - numSegmentationMasks
+        
+        NSLog("Model has \(numClasses) classes")
         
         // convert output to array of predictions
         var predictions = getPredictionsFromOutput(
             output: boxesOutput as [NSNumber],
             rows: boxesOutputShape[1], // xywh + 1 class + 32 masks
             columns: boxesOutputShape[2],
-            numberOfClasses: boxesOutputShape[0],
+            numberOfClasses: numClasses,
             inputImgSize: inputSize
         )
         
         NSLog("Got \(predictions.count) predicted boxes")
-        NSLog("Remove predictions with score lower than 0.8")
+        NSLog("Remove predictions with score lower than 0.3")
         
         // remove predictions with confidence score lower than threshold
-        predictions.removeAll { $0.score < 0.8 }
+        predictions.removeAll { $0.score < 0.3 }
         
-        NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.8")
+        NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
         
         guard !predictions.isEmpty else {
             return
@@ -418,23 +421,23 @@ extension ContentViewModel {
         }
         
         self.predictions = nmsPredictions
-    
-        let maskProtos = getMaskProtosFromOutput(
+        
+        let maskProtos = getMaskProtosFromOutputPyTorch(
             output: masksOutput as [NSNumber],
-            rows: 64,
-            columns: 64,
-            tubes: 32
+            rows: masksOutputShape[2],
+            columns: masksOutputShape[3],
+            tubes: numSegmentationMasks
         )
-        
+
         NSLog("Got \(maskProtos.count) mask protos")
-        
+
         let maskPredictions = masksFromProtos(
             boxPredictions: nmsPredictions,
             maskProtos: maskProtos,
-            maskSize: (width: masksOutputShape[1], height: masksOutputShape[2]),
+            maskSize: (width: masksOutputShape[2], height: masksOutputShape[3]),
             originalImgSize: uiImage.size
         )
-        
+
         self.maskPredictions = maskPredictions
     }
 }
@@ -480,7 +483,7 @@ extension ContentViewModel {
             return
         }
         
-        let boxesOutputTensor: Tensor // Shape = (1,37,1344)
+        let boxesOutputTensor: Tensor // Shape = (1,116,1344)
         let masksOutputTensor: Tensor // Shape = (1,64,64,32)
         
         do {
@@ -517,7 +520,7 @@ extension ContentViewModel {
         )
         
         NSLog("Got \(predictions.count) predicted boxes")
-        NSLog("Remove predictions with score lower than 0.8")
+        NSLog("Remove predictions with score lower than 0.3")
         
         // remove predictions with confidence score lower than threshold
         predictions.removeAll { $0.score < 0.3 }
@@ -562,7 +565,6 @@ extension ContentViewModel {
 
         NSLog("Got \(maskProtos.count) mask protos")
 
-        // High memory footprint ~300 MB
         let maskPredictions = masksFromProtos(
             boxPredictions: nmsPredictions,
             maskProtos: maskProtos,
@@ -729,7 +731,24 @@ extension ContentViewModel {
             }
             masks.append(mask)
         }
-        
+        return masks
+    }
+    
+    func getMaskProtosFromOutputPyTorch(
+        output: [NSNumber],
+        rows: Int,
+        columns: Int,
+        tubes: Int
+    ) -> [[UInt8]] {
+        var masks: [[UInt8]] = []
+        for tube in 0..<tubes {
+            var mask: [UInt8] = []
+            for i in 0..<(rows*columns) {
+                let index = tube*(rows*columns)+i
+                mask.append(UInt8(truncating: output[index]))
+            }
+            masks.append(mask)
+        }
         return masks
     }
 }

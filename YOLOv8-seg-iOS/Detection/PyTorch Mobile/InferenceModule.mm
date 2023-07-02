@@ -19,7 +19,7 @@
 /// - Parameters
 ///     - filePath: The model's location.
 ///     - inputSize: The model's input size.
-///     - outputSize The model's output size.
+///     - outputSize The model's output sizes.
 - (nullable instancetype)initWithFileAtPath:(NSString*)filePath
                                   inputSize:(CGSize)inputSize
                                 outputSizes:(NSArray<NSNumber*>*)outputSizes
@@ -29,7 +29,7 @@
         try {
             _impl = torch::jit::_load_for_mobile(filePath.UTF8String);
         } catch (const std::exception& exception) {
-            NSLog(@"%s", exception.what());
+            NSLog(@"Exception while loading model: %s", exception.what());
             return nil;
         }
         self->inputWidth  = inputSize.width;
@@ -49,26 +49,23 @@
         // Create tensor from imageBuffer
         at::Tensor tensor = torch::from_blob(imageBuffer, { 1, 3, inputHeight, inputWidth }, at::kFloat);
         
-        c10::InferenceMode guard;
-//        CFTimeInterval startTime = CACurrentMediaTime();
         auto outputTuple = _impl.forward({ tensor }).toTuple();
-//        CFTimeInterval elapsedTime = CACurrentMediaTime() - startTime;
-//        NSLog(@"inference time:%f", elapsedTime);
         
         c10::ivalue::TupleElements elements = outputTuple->elements();
-        size_t elementsSize = elements.size();
+        size_t numOfOutputs = elements.size();
         
-        if (elementsSize != outputSizes.count) {
+        if (numOfOutputs != outputSizes.count) {
             return nil;
         }
         
         NSMutableArray* results = [[NSMutableArray alloc] init];
-        for (int i = 0; i < elements.size(); i++) {
+        for (int i = 0; i < numOfOutputs; i++) {
             at::Tensor tensor = elements[i].toTensor();
-            
+
             // Cast outputTensor to array of float values
             float* floatBuffer = tensor.data_ptr<float>();
             if (!floatBuffer) {
+                [results addObject:@[]];
                 continue;
             }
             
@@ -77,14 +74,13 @@
             for (int j = 0; j < [outputSizes[i] intValue]; j++) {
               [tensorArray addObject:@(floatBuffer[j])];
             }
-            
+
             [results addObject:tensorArray];
         }
 
         return [results copy];
-        
     } catch (const std::exception& exception) {
-        NSLog(@"%s", exception.what());
+        NSLog(@"Exception while running inference: %s", exception.what());
     }
     return nil;
 }
