@@ -100,13 +100,10 @@ extension ContentViewModel {
         }
         
         // Boxes
-        let var_1052 = outputs.var_1053 // (1,37,1344)
+        let var_1052 = outputs.var_1053 // (1,116,8400)
         // Masks
-        let p = outputs.p // (1,32,64,64)
-        
-        NSLog("Got output 'var_1052' with shape: \(var_1052.shape)")
-        NSLog("Got output 'p' with shape: \(p.shape)")
-        
+        let p = outputs.p // (1,32,160,160)
+    
         let numSegmentationMasks = 32
         let numClasses = Int(truncating: var_1052.shape[1]) - 4 - numSegmentationMasks
         
@@ -115,19 +112,19 @@ extension ContentViewModel {
         // convert output to array of predictions
         var predictions = getPredictionsFromOutput(
             output: var_1052,
-            rows: Int(truncating: var_1052.shape[1]), // xywh + 1 class + 32 masks
+            rows: Int(truncating: var_1052.shape[1]), // xywh + numClasses + 32 masks
             columns: Int(truncating: var_1052.shape[2]),
             numberOfClasses: numClasses,
             inputImgSize: CGSize(width: imgsz.pixelsWide, height: imgsz.pixelsHigh)
         )
         
         NSLog("Got \(predictions.count) predicted boxes")
-        NSLog("Remove predictions with score lower than 0.8")
+        NSLog("Remove predictions with score lower than 0.3")
 
         // remove predictions with confidence score lower than threshold
-        predictions.removeAll { $0.score < 0.8 }
+        predictions.removeAll { $0.score < 0.3 }
         
-        NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.8")
+        NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
         
         guard !predictions.isEmpty else {
             return
@@ -190,10 +187,7 @@ extension ContentViewModel {
                 return
             }
             
-            NSLog("Got output with index 1 (boxes) with shape: \(String(describing: boxesOutput.featureValue.multiArrayValue?.shape))")
-            NSLog("Got output with index 0 (masks) with shape: \(String(describing: masksOutput.featureValue.multiArrayValue?.shape))")
-            
-            guard let boxes = boxesOutput.featureValue.multiArrayValue else {
+            guard let boxes = boxesOutput.featureValue.multiArrayValue else { // (1,116,8400)
                 return
             }
             
@@ -205,19 +199,19 @@ extension ContentViewModel {
             // convert output to array of predictions
             var predictions = getPredictionsFromOutput(
                 output: boxes,
-                rows: Int(truncating: boxes.shape[1]), // xywh + 1 class + 32 masks
+                rows: Int(truncating: boxes.shape[1]), // xywh + numClasses + 32 masks
                 columns: Int(truncating: boxes.shape[2]),
                 numberOfClasses: numClasses,
                 inputImgSize: CGSize(width: inputSize.pixelsWide, height: inputSize.pixelsHigh)
             )
 
             NSLog("Got \(predictions.count) predicted boxes")
-            NSLog("Remove predictions with score lower than 0.8")
+            NSLog("Remove predictions with score lower than 0.3")
             
             // remove predictions with confidence score lower than threshold
-            predictions.removeAll { $0.score < 0.8 }
+            predictions.removeAll { $0.score < 0.3 }
             
-            NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.8")
+            NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
             
             guard !predictions.isEmpty else {
                 return
@@ -247,7 +241,7 @@ extension ContentViewModel {
             
             self.predictions = nmsPredictions
             
-            guard let masks = masksOutput.featureValue.multiArrayValue else {
+            guard let masks = masksOutput.featureValue.multiArrayValue else { // (1,32,160,160)
                 print("No masks output")
                 return
             }
@@ -258,9 +252,9 @@ extension ContentViewModel {
                 columns: Int(truncating: masks.shape[2]),
                 tubes: Int(truncating: masks.shape[1])
             )
-            
+
             NSLog("Got \(maskProtos.count) mask protos")
-            
+
             let maskPredictions = masksFromProtos(
                 boxPredictions: nmsPredictions,
                 maskProtos: maskProtos,
@@ -270,7 +264,7 @@ extension ContentViewModel {
                 ),
                 originalImgSize: originalImgSize
             )
-            
+
             self.maskPredictions = maskPredictions
         }
         
@@ -282,7 +276,7 @@ extension ContentViewModel {
         do {
             let config = MLModelConfiguration()
             
-            guard let model = try? YOLOv8n_coco128_seg_06_05_23(configuration: config) else {
+            guard let model = try? yolov8l_seg(configuration: config) else {
                 print("failed to init model")
                 return
             }
@@ -292,11 +286,8 @@ extension ContentViewModel {
                   let imgsz = imgInputDesc.imageConstraint
             else { return }
             
-            // Create an instance of VNCoreMLModel from MLModel
             let visionModel = try VNCoreMLModel(for: model.model)
-            // Create an instance of VNCoreMLRequest that contains the previously created VNCoreMLModel
-            // and a closure that will be called after model initialization.
-            let objectRecognition = VNCoreMLRequest(
+            let segmentationRequest = VNCoreMLRequest(
                 model: visionModel,
                 completionHandler: { (request, error) in
                     if let error = error {
@@ -307,10 +298,9 @@ extension ContentViewModel {
                         handleResults(results, inputSize: imgsz, originalImgSize: uiImage.size)
                     }
                 })
-            objectRecognition.imageCropAndScaleOption = .scaleFit
+            segmentationRequest.imageCropAndScaleOption = .scaleFill
             
-            // Store request in request variable so that it can later be called using a VNImageRequestHandler
-            requests = [objectRecognition]
+            requests = [segmentationRequest]
         } catch let error as NSError {
             print("Model loading went wrong: \(error)")
         }
@@ -380,7 +370,7 @@ extension ContentViewModel {
         // convert output to array of predictions
         var predictions = getPredictionsFromOutput(
             output: boxesOutput as [NSNumber],
-            rows: boxesOutputShape[1], // xywh + 1 class + 32 masks
+            rows: boxesOutputShape[1], // xywh + numClasses + 32 masks
             columns: boxesOutputShape[2],
             numberOfClasses: numClasses,
             inputImgSize: inputSize
@@ -513,7 +503,7 @@ extension ContentViewModel {
         // convert output to array of predictions
         var predictions = getPredictionsFromOutput(
             output: boxesOutput as [NSNumber],
-            rows: boxesOutputShapeDim[1], // xywh + 1 class + 32 masks
+            rows: boxesOutputShapeDim[1], // xywh + numClasses + 32 masks
             columns: boxesOutputShapeDim[2],
             numberOfClasses: numClasses,
             inputImgSize: inputSize
@@ -615,8 +605,8 @@ extension ContentViewModel {
             
             let maskScores = {
                 var scores: [Float] = []
-                for j in 0..<32 {
-                    scores.append(Float(truncating: output[4+numberOfClasses+j*columns+i]))
+                for k in 0..<32 {
+                    scores.append(Float(truncating: output[(4+numberOfClasses+k)*columns+i]))
                 }
                 return scores
             }()
@@ -707,8 +697,8 @@ extension ContentViewModel {
         var masks: [[UInt8]] = []
         for tube in 0..<tubes {
             var mask: [UInt8] = []
-            for row in 0..<(rows*columns) {
-                let index = tube+(row*tubes)
+            for i in 0..<(rows*columns) {
+                let index = tube*(rows*columns)+i
                 mask.append(UInt8(truncating: output[index]))
             }
             masks.append(mask)
