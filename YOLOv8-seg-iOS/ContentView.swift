@@ -35,61 +35,67 @@ struct ContentView: View {
                     predictions: $viewModel.predictions))
             .frame(maxHeight: 400)
             
-            VStack(spacing: 8) {
-                
-                PhotosPicker("Pick Image", selection: $viewModel.imageSelection, matching: .images)
-                
-                Picker(
-                    "Framework",
-                    selection: $viewModel.selectedDetector
-                ) {
-                    Text("CoreML")
-                        .tag(0)
-                    Text("PyTorch")
-                        .tag(1)
-                    Text("TFLite")
-                        .tag(2)
-                    Text("Vision")
-                        .tag(3)
+            Form {
+                Section {
+                    PhotosPicker(
+                        "Pick Image",
+                        selection: $viewModel.imageSelection,
+                        matching: .images)
                 }
-                .pickerStyle(.segmented)
                 
-                HStack {
-                    Spacer()
+                Section {
+                    Picker(
+                        "Framework",
+                        selection: $viewModel.selectedDetector
+                    ) {
+                        Text("CoreML")
+                            .tag(0)
+                        Text("PyTorch")
+                            .tag(1)
+                        Text("TFLite")
+                            .tag(2)
+                        Text("Vision")
+                            .tag(3)
+                    }
+                    .pickerStyle(.segmented)
                     
                     Button {
                         Task {
                             await viewModel.runInference()
                         }
                     } label: {
-                        Text("Run inference")
-                    }
-                    
-                    Spacer()
-                    
-                    Button {
-                        viewModel.predictions = []
-                        viewModel.maskPredictions = []
-                    } label: {
-                        Text("Clear predictions")
-                    }
-                    
-                    Spacer()
+                        HStack {
+                            Text("Run inference")
+                            Spacer()
+                            if viewModel.processing {
+                                ProgressView()
+                            }
+                        }
+                    }.disabled(viewModel.processing)
                 }
                 
+                Section {
+                    if !viewModel.predictions.isEmpty {
+                        Button("Clear predictions") {
+                            viewModel.predictions = []
+                            viewModel.maskPredictions = []
+                        }
+                    }
+                    if !viewModel.maskPredictions.isEmpty {
+                        Button("Show all masks") {
+                            presentMaskPreview.toggle()
+                        }
+                    }
+                }
             }
             .padding(.horizontal)
             .padding(.top, 32)
-
-            if !viewModel.maskPredictions.isEmpty {
-                Button("Show all masks") {
-                    presentMaskPreview.toggle()
-                }
-            }
             
             Spacer()
             
-        }.sheet(isPresented: $presentMaskPreview) {
+        }
+        .background(Color(UIColor.systemGroupedBackground))
+        .sheet(isPresented: $presentMaskPreview) {
             buildMasksSheet()
         }
     }

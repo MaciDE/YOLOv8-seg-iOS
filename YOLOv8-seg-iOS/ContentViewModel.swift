@@ -21,6 +21,8 @@ class ContentViewModel: ObservableObject {
     @Published var uiImage: UIImage?
     @Published var selectedDetector: Int = 0
     
+    @MainActor @Published var processing: Bool = false
+    
     @MainActor @Published var predictions: [Prediction] = []
     @MainActor @Published var maskPredictions: [MaskPrediction] = []
     
@@ -49,6 +51,9 @@ class ContentViewModel: ObservableObject {
     }
     
     func runInference() async {
+        await MainActor.run { [weak self] in
+            self?.processing = true
+        }
         switch selectedDetector {
         case 0:
             await runCoreMLInference()
@@ -59,6 +64,9 @@ class ContentViewModel: ObservableObject {
         case 3:
             await runVisionInference()
         default:
+            await MainActor.run { [weak self] in
+                self?.processing = false
+            }
             break
         }
     }
@@ -180,6 +188,7 @@ extension ContentViewModel {
             
             await MainActor.run { [weak self, maskPredictions] in
                 self?.maskPredictions = maskPredictions
+                self?.processing = false
             }
         }
     }
@@ -277,6 +286,7 @@ extension ContentViewModel {
 
             await MainActor.run { [weak self, maskPredictions] in
                 self?.maskPredictions = maskPredictions
+                self?.processing = false
             }
         }
         
@@ -447,6 +457,7 @@ extension ContentViewModel {
 
             await MainActor.run { [weak self, maskPredictions] in
                 self?.maskPredictions = maskPredictions
+                self?.processing = false
             }
         }
     }
@@ -587,6 +598,7 @@ extension ContentViewModel {
             
             await MainActor.run { [weak self, maskPredictions] in
                 self?.maskPredictions = maskPredictions
+                self?.processing = false
             }
         }
     }
