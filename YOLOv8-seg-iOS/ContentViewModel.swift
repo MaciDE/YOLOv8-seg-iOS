@@ -21,8 +21,8 @@ class ContentViewModel: ObservableObject {
     @Published var uiImage: UIImage?
     @Published var selectedDetector: Int = 0
     
-    @Published var predictions: [Prediction] = []
-    @Published var maskPredictions: [MaskPrediction] = []
+    @MainActor @Published var predictions: [Prediction] = []
+    @MainActor @Published var maskPredictions: [MaskPrediction] = []
     
     init() {
         setupBindings()
@@ -48,16 +48,16 @@ class ContentViewModel: ObservableObject {
         }.store(in: &cancellables)
     }
     
-    func runInference() {
+    func runInference() async {
         switch selectedDetector {
         case 0:
-            runCoreMLInference()
+            await runCoreMLInference()
         case 1:
-            runPyTorchInference()
+            await runPyTorchInference()
         case 2:
-            runTFLiteInference()
+            await runTFLiteInference()
         case 3:
-            runVisionInference()
+            await runVisionInference()
         default:
             break
         }
@@ -66,14 +66,14 @@ class ContentViewModel: ObservableObject {
 
 // MARK: CoreML Inference
 extension ContentViewModel {
-    private func runCoreMLInference() {
+    private func runCoreMLInference() async {
         guard let uiImage else { return }
         
         NSLog("Start inference using CoreML")
         
         let config = MLModelConfiguration()
         
-        guard let model = try? YOLOv8n_coco128_seg_06_05_23(configuration: config) else {
+        guard let model = try? yolov8l_seg(configuration: config) else {
             NSLog("Failed to init model")
             return
         }
@@ -90,97 +90,105 @@ extension ContentViewModel {
             return
         }
     
-        let outputs: YOLOv8n_coco128_seg_06_05_23Output
+        Task {
+            let outputs: yolov8l_segOutput
             
-        do {
-            outputs = try model.prediction(image: pixelBuffer)
-        } catch {
-            NSLog("Error while calling prediction on model: \(error)")
-            return
+            do {
+                outputs = try model.prediction(image: pixelBuffer)
+            } catch {
+                NSLog("Error while calling prediction on model: \(error)")
+                return
+            }
+            
+            // Boxes
+            let boxesOutput = outputs.var_1505 // (1,116,8400)
+            // Masks
+            let masksOutput = outputs.p // (1,32,160,160)
+            
+            writeToFile(Array(try! UnsafeBufferPointer<Float>(boxesOutput)).debugDescription, fileName: "boxesOutput")
+            
+            let numSegmentationMasks = 32
+            let numClasses = Int(truncating: boxesOutput.shape[1]) - 4 - numSegmentationMasks
+            
+            NSLog("Model has \(numClasses) classes")
+            
+            // convert output to array of predictions
+            var predictions = getPredictionsFromOutput(
+                output: boxesOutput,
+                rows: Int(truncating: boxesOutput.shape[1]), // xywh + numClasses + 32 masks
+                columns: Int(truncating: boxesOutput.shape[2]),
+                numberOfClasses: numClasses,
+                inputImgSize: CGSize(width: imgsz.pixelsWide, height: imgsz.pixelsHigh)
+            )
+            
+            NSLog("Got \(predictions.count) predicted boxes")
+            NSLog("Remove predictions with score lower than 0.3")
+            
+            // remove predictions with confidence score lower than threshold
+            predictions.removeAll { $0.score < 0.3 }
+            
+            NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
+            
+            guard !predictions.isEmpty else {
+                return
+            }
+            
+            NSLog("Perform non maximum suppression")
+            
+            // Group predictions by class
+            let groupedPredictions = Dictionary(grouping: predictions) { prediction in
+                prediction.classIndex
+            }
+            
+            var nmsPredictions: [Prediction] = []
+            let _ = groupedPredictions.mapValues { predictions in
+                nmsPredictions.append(
+                    contentsOf: nonMaximumSuppression(
+                        predictions: predictions,
+                        iouThreshold: 0.6,
+                        limit: 100))
+            }
+            
+            NSLog("\(nmsPredictions.count) boxes left after performing nms with iou threshold of 0.6")
+            
+            guard !nmsPredictions.isEmpty else {
+                return
+            }
+            
+            await MainActor.run { [weak self, nmsPredictions] in
+                self?.predictions = nmsPredictions
+            }
+            
+            let maskProtos = getMaskProtosFromOutput(
+                output: masksOutput,
+                rows: Int(truncating: masksOutput.shape[3]),
+                columns: Int(truncating: masksOutput.shape[2]),
+                tubes: Int(truncating: masksOutput.shape[1])
+            )
+            
+            NSLog("Got \(maskProtos.count) mask protos")
+            
+            let maskPredictions = masksFromProtos(
+                boxPredictions: nmsPredictions,
+                maskProtos: maskProtos,
+                maskSize: (
+                    width: Int(truncating: masksOutput.shape[3]),
+                    height: Int(truncating: masksOutput.shape[2])
+                ),
+                originalImgSize: uiImage.size
+            )
+            
+            await MainActor.run { [weak self, maskPredictions] in
+                self?.maskPredictions = maskPredictions
+            }
         }
-        
-        // Boxes
-        let var_1052 = outputs.var_1053 // (1,116,8400)
-        // Masks
-        let p = outputs.p // (1,32,160,160)
-    
-        let numSegmentationMasks = 32
-        let numClasses = Int(truncating: var_1052.shape[1]) - 4 - numSegmentationMasks
-        
-        NSLog("Model has \(numClasses) classes")
-        
-        // convert output to array of predictions
-        var predictions = getPredictionsFromOutput(
-            output: var_1052,
-            rows: Int(truncating: var_1052.shape[1]), // xywh + numClasses + 32 masks
-            columns: Int(truncating: var_1052.shape[2]),
-            numberOfClasses: numClasses,
-            inputImgSize: CGSize(width: imgsz.pixelsWide, height: imgsz.pixelsHigh)
-        )
-        
-        NSLog("Got \(predictions.count) predicted boxes")
-        NSLog("Remove predictions with score lower than 0.3")
-
-        // remove predictions with confidence score lower than threshold
-        predictions.removeAll { $0.score < 0.3 }
-        
-        NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
-        
-        guard !predictions.isEmpty else {
-            return
-        }
-        
-        NSLog("Perform non maximum suppression")
-        
-        // Group predictions by class
-        let groupedPredictions = Dictionary(grouping: predictions) { prediction in
-            prediction.classIndex
-        }
-        
-        var nmsPredictions: [Prediction] = []
-        let _ = groupedPredictions.mapValues { predictions in
-            nmsPredictions.append(
-                contentsOf: nonMaximumSuppression(
-                    predictions: predictions,
-                    iouThreshold: 0.6,
-                    limit: 100))
-        }
-        
-        NSLog("\(nmsPredictions.count) boxes left after performing nms with iou threshold of 0.6")
-        
-        guard !nmsPredictions.isEmpty else {
-            return
-        }
-        
-        self.predictions = nmsPredictions
-        
-        let maskProtos = getMaskProtosFromOutput(
-            output: p,
-            rows: Int(truncating: p.shape[3]),
-            columns: Int(truncating: p.shape[2]),
-            tubes: Int(truncating: p.shape[1])
-        )
-        
-        NSLog("Got \(maskProtos.count) mask protos")
-        
-        let maskPredictions = masksFromProtos(
-            boxPredictions: nmsPredictions,
-            maskProtos: maskProtos,
-            maskSize: (
-                width: Int(truncating: p.shape[3]),
-                height: Int(truncating: p.shape[2])
-            ),
-            originalImgSize: uiImage.size
-        )
-        
-        self.maskPredictions = maskPredictions
     }
 }
 
 // MARK: Vision Inference
 extension ContentViewModel {
-    private func runVisionInference() {
-        func handleResults(_ results: [VNObservation], inputSize: MLImageConstraint, originalImgSize: CGSize) {
+    private func runVisionInference() async {
+        @Sendable func handleResults(_ results: [VNObservation], inputSize: MLImageConstraint, originalImgSize: CGSize) async {
             guard let boxesOutput = results[1, default: nil] as? VNCoreMLFeatureValueObservation,
                   let masksOutput = results[0, default: nil] as? VNCoreMLFeatureValueObservation
             else {
@@ -239,7 +247,9 @@ extension ContentViewModel {
                 return
             }
             
-            self.predictions = nmsPredictions
+            await MainActor.run { [weak self, nmsPredictions] in
+                self?.predictions = nmsPredictions
+            }
             
             guard let masks = masksOutput.featureValue.multiArrayValue else { // (1,32,160,160)
                 print("No masks output")
@@ -265,7 +275,9 @@ extension ContentViewModel {
                 originalImgSize: originalImgSize
             )
 
-            self.maskPredictions = maskPredictions
+            await MainActor.run { [weak self, maskPredictions] in
+                self?.maskPredictions = maskPredictions
+            }
         }
         
         guard let uiImage else { return }
@@ -295,7 +307,9 @@ extension ContentViewModel {
                     }
                     
                     if let results = request.results {
-                        handleResults(results, inputSize: imgsz, originalImgSize: uiImage.size)
+                        Task {
+                            await handleResults(results, inputSize: imgsz, originalImgSize: uiImage.size)
+                        }
                     }
                 })
             segmentationRequest.imageCropAndScaleOption = .scaleFill
@@ -309,7 +323,7 @@ extension ContentViewModel {
         
         let imageRequestHandler = VNImageRequestHandler(
             cgImage: cgImage,
-            orientation: .up
+            orientation: uiImage.imageOrientation.toCGImagePropertyOrientation() ?? .up
         )
         do {
             try imageRequestHandler.perform(requests)
@@ -321,7 +335,7 @@ extension ContentViewModel {
 
 // MARK: PyTorch Mobile Inference
 extension ContentViewModel {
-    private func runPyTorchInference() {
+    private func runPyTorchInference() async {
         guard let uiImage else { return }
         
         let inputSize = CGSize(width: 640, height: 640)
@@ -339,102 +353,108 @@ extension ContentViewModel {
             return
         }
         
-        guard let inferenceModule = InferenceModule(
-            fileAtPath: modelFilePath,
-            inputSize: inputSize,
-            outputSizes: [
-                boxesOutputShape.reduce(1, *) as NSNumber,
-                masksOutputShape.reduce(1, *) as NSNumber
-            ]
-        ) else {
-            NSLog("Failed to create instance of InferenceModule")
-            return
-        }
-        
-        guard var pixelBuffer = uiImage.resized(to: inputSize).normalized() else {
-            return
-        }
-        
-        guard let outputs = inferenceModule.detect(image: &pixelBuffer) else {
-            return
-        }
-        
-        let boxesOutput = outputs[0] // Shape = (1,116,8400)
-        let masksOutput = outputs[1] // Shape = (1,32,160,160)
-        
-        let numSegmentationMasks = 32
-        let numClasses = boxesOutputShape[1] - 4 - numSegmentationMasks
-        
-        NSLog("Model has \(numClasses) classes")
-        
-        // convert output to array of predictions
-        var predictions = getPredictionsFromOutput(
-            output: boxesOutput as [NSNumber],
-            rows: boxesOutputShape[1], // xywh + numClasses + 32 masks
-            columns: boxesOutputShape[2],
-            numberOfClasses: numClasses,
-            inputImgSize: inputSize
-        )
-        
-        NSLog("Got \(predictions.count) predicted boxes")
-        NSLog("Remove predictions with score lower than 0.3")
-        
-        // remove predictions with confidence score lower than threshold
-        predictions.removeAll { $0.score < 0.3 }
-        
-        NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
-        
-        guard !predictions.isEmpty else {
-            return
-        }
-        
-        NSLog("Perform non maximum suppression")
-        
-        // Group predictions by class
-        let groupedPredictions = Dictionary(grouping: predictions) { prediction in
-            prediction.classIndex
-        }
-        
-        var nmsPredictions: [Prediction] = []
-        let _ = groupedPredictions.mapValues { predictions in
-            nmsPredictions.append(
-                contentsOf: nonMaximumSuppression(
-                    predictions: predictions,
-                    iouThreshold: 0.6,
-                    limit: 100))
-        }
-        
-        NSLog("\(nmsPredictions.count) boxes left after performing nms with iou threshold of 0.6")
-        
-        guard !nmsPredictions.isEmpty else {
-            return
-        }
-        
-        self.predictions = nmsPredictions
-        
-        let maskProtos = getMaskProtosFromOutputPyTorch(
-            output: masksOutput as [NSNumber],
-            rows: masksOutputShape[2],
-            columns: masksOutputShape[3],
-            tubes: numSegmentationMasks
-        )
+        Task {
+            guard let inferenceModule = InferenceModule(
+                fileAtPath: modelFilePath,
+                inputSize: inputSize,
+                outputSizes: [
+                    boxesOutputShape.reduce(1, *) as NSNumber,
+                    masksOutputShape.reduce(1, *) as NSNumber
+                ]
+            ) else {
+                NSLog("Failed to create instance of InferenceModule")
+                return
+            }
+            
+            guard var pixelBuffer = uiImage.resized(to: inputSize).normalized() else {
+                return
+            }
+            
+            guard let outputs = inferenceModule.detect(image: &pixelBuffer) else {
+                return
+            }
+            
+            let boxesOutput = outputs[0] // Shape = (1,116,8400)
+            let masksOutput = outputs[1] // Shape = (1,32,160,160)
+            
+            let numSegmentationMasks = 32
+            let numClasses = boxesOutputShape[1] - 4 - numSegmentationMasks
+            
+            NSLog("Model has \(numClasses) classes")
+            
+            // convert output to array of predictions
+            var predictions = getPredictionsFromOutput(
+                output: boxesOutput as [NSNumber],
+                rows: boxesOutputShape[1], // xywh + numClasses + 32 masks
+                columns: boxesOutputShape[2],
+                numberOfClasses: numClasses,
+                inputImgSize: inputSize
+            )
+            
+            NSLog("Got \(predictions.count) predicted boxes")
+            NSLog("Remove predictions with score lower than 0.3")
+            
+            // remove predictions with confidence score lower than threshold
+            predictions.removeAll { $0.score < 0.3 }
+            
+            NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
+            
+            guard !predictions.isEmpty else {
+                return
+            }
+            
+            NSLog("Perform non maximum suppression")
+            
+            // Group predictions by class
+            let groupedPredictions = Dictionary(grouping: predictions) { prediction in
+                prediction.classIndex
+            }
+            
+            var nmsPredictions: [Prediction] = []
+            let _ = groupedPredictions.mapValues { predictions in
+                nmsPredictions.append(
+                    contentsOf: nonMaximumSuppression(
+                        predictions: predictions,
+                        iouThreshold: 0.6,
+                        limit: 100))
+            }
+            
+            NSLog("\(nmsPredictions.count) boxes left after performing nms with iou threshold of 0.6")
+            
+            guard !nmsPredictions.isEmpty else {
+                return
+            }
+            
+            await MainActor.run { [weak self, nmsPredictions] in
+                self?.predictions = nmsPredictions
+            }
+            
+            let maskProtos = getMaskProtosFromOutputPyTorch(
+                output: masksOutput as [NSNumber],
+                rows: masksOutputShape[2],
+                columns: masksOutputShape[3],
+                tubes: numSegmentationMasks
+            )
 
-        NSLog("Got \(maskProtos.count) mask protos")
+            NSLog("Got \(maskProtos.count) mask protos")
 
-        let maskPredictions = masksFromProtos(
-            boxPredictions: nmsPredictions,
-            maskProtos: maskProtos,
-            maskSize: (width: masksOutputShape[2], height: masksOutputShape[3]),
-            originalImgSize: uiImage.size
-        )
+            let maskPredictions = masksFromProtos(
+                boxPredictions: nmsPredictions,
+                maskProtos: maskProtos,
+                maskSize: (width: masksOutputShape[2], height: masksOutputShape[3]),
+                originalImgSize: uiImage.size
+            )
 
-        self.maskPredictions = maskPredictions
+            await MainActor.run { [weak self, maskPredictions] in
+                self?.maskPredictions = maskPredictions
+            }
+        }
     }
 }
 
 // MARK: TFLite Inference
 extension ContentViewModel {
-    private func runTFLiteInference() {
+    private func runTFLiteInference() async {
         guard let uiImage else { return }
         
         NSLog("Start inference using TFLite")
@@ -443,126 +463,132 @@ extension ContentViewModel {
             forResource: "yolov8l-seg_coco128_float16",
             withExtension: "tflite")!.path
         
-        let interpreter: Interpreter
-        do {
-            interpreter = try Interpreter(
-                modelPath: modelFilePath,
-                delegates: []
+        Task {
+            let interpreter: Interpreter
+            do {
+                interpreter = try Interpreter(
+                    modelPath: modelFilePath,
+                    delegates: []
+                )
+                
+                try interpreter.allocateTensors()
+            } catch {
+                NSLog("Error while initializing interpreter: \(error)")
+                return
+            }
+            
+            let input: Tensor
+            do {
+                input = try interpreter.input(at: 0)
+            } catch let error {
+                NSLog("Failed to get input with error: \(error.localizedDescription)")
+                return
+            }
+            
+            let inputSize = CGSize(
+                width: input.shape.dimensions[1],
+                height: input.shape.dimensions[2]
             )
             
-            try interpreter.allocateTensors()
-        } catch {
-            NSLog("Error while initializing interpreter: \(error)")
-            return
-        }
-        
-        let input: Tensor
-        do {
-            input = try interpreter.input(at: 0)
-        } catch let error {
-            NSLog("Failed to get input with error: \(error.localizedDescription)")
-            return
-        }
-        
-        let inputSize = CGSize(
-            width: input.shape.dimensions[1],
-            height: input.shape.dimensions[2]
-        )
-        
-        guard let data = uiImage.resized(to: inputSize).normalizedDataFromImage() else {
-            return
-        }
-        
-        let boxesOutputTensor: Tensor // Shape = (1,116,1344)
-        let masksOutputTensor: Tensor // Shape = (1,64,64,32)
-        
-        do {
-            try interpreter.copy(data, toInputAt: 0)
-            try interpreter.invoke()
+            guard let data = uiImage.resized(to: inputSize).normalizedDataFromImage() else {
+                return
+            }
             
-            boxesOutputTensor = try interpreter.output(at: 0)
-            masksOutputTensor = try interpreter.output(at: 1)
-        } catch let error {
-            NSLog("Failed to invoke the interpreter with error: \(error.localizedDescription)")
-            return
+            let boxesOutputTensor: Tensor // Shape = (1,116,1344)
+            let masksOutputTensor: Tensor // Shape = (1,64,64,32)
+            
+            do {
+                try interpreter.copy(data, toInputAt: 0)
+                try interpreter.invoke()
+                
+                boxesOutputTensor = try interpreter.output(at: 0)
+                masksOutputTensor = try interpreter.output(at: 1)
+            } catch let error {
+                NSLog("Failed to invoke the interpreter with error: \(error.localizedDescription)")
+                return
+            }
+            
+            let boxesOutputShapeDim = boxesOutputTensor.shape.dimensions
+            let masksOutputShapeDim = masksOutputTensor.shape.dimensions
+            
+            NSLog("Got output with index 0 (boxes) with shape: \(boxesOutputShapeDim)")
+            NSLog("Got output with index 1 (masks) with shape: \(masksOutputShapeDim)")
+            
+            let numSegmentationMasks = 32
+            let numClasses = boxesOutputShapeDim[1] - 4 - numSegmentationMasks
+            
+            NSLog("Model has \(numClasses) classes")
+            
+            let boxesOutput = ([Float](unsafeData: boxesOutputTensor.data) ?? [])
+            
+            // convert output to array of predictions
+            var predictions = getPredictionsFromOutput(
+                output: boxesOutput as [NSNumber],
+                rows: boxesOutputShapeDim[1], // xywh + numClasses + 32 masks
+                columns: boxesOutputShapeDim[2],
+                numberOfClasses: numClasses,
+                inputImgSize: inputSize
+            )
+            
+            NSLog("Got \(predictions.count) predicted boxes")
+            NSLog("Remove predictions with score lower than 0.3")
+            
+            // remove predictions with confidence score lower than threshold
+            predictions.removeAll { $0.score < 0.3 }
+            
+            NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
+            
+            guard !predictions.isEmpty else {
+                return
+            }
+            
+            NSLog("Perform non maximum suppression")
+            
+            // Group predictions by class
+            let groupedPredictions = Dictionary(grouping: predictions) { prediction in
+                prediction.classIndex
+            }
+            
+            var nmsPredictions: [Prediction] = []
+            let _ = groupedPredictions.mapValues { predictions in
+                nmsPredictions.append(
+                    contentsOf: nonMaximumSuppression(
+                        predictions: predictions,
+                        iouThreshold: 0.6,
+                        limit: 100))
+            }
+            
+            NSLog("\(nmsPredictions.count) boxes left after performing nms with iou threshold of 0.6")
+            
+            guard !nmsPredictions.isEmpty else {
+                return
+            }
+            
+            await MainActor.run { [weak self, nmsPredictions] in
+                self?.predictions = nmsPredictions
+            }
+            
+            let masksOutput = ([Float](unsafeData: masksOutputTensor.data) ?? [])
+            let maskProtos = getMaskProtosFromOutput(
+                output: masksOutput as [NSNumber],
+                rows: masksOutputShapeDim[1],
+                columns: masksOutputShapeDim[2],
+                tubes: numSegmentationMasks
+            )
+            
+            NSLog("Got \(maskProtos.count) mask protos")
+            
+            let maskPredictions = masksFromProtos(
+                boxPredictions: nmsPredictions,
+                maskProtos: maskProtos,
+                maskSize: (width: masksOutputShapeDim[1], height: masksOutputShapeDim[2]),
+                originalImgSize: uiImage.size
+            )
+            
+            await MainActor.run { [weak self, maskPredictions] in
+                self?.maskPredictions = maskPredictions
+            }
         }
-        
-        let boxesOutputShapeDim = boxesOutputTensor.shape.dimensions
-        let masksOutputShapeDim = masksOutputTensor.shape.dimensions
-        
-        NSLog("Got output with index 0 (boxes) with shape: \(boxesOutputShapeDim)")
-        NSLog("Got output with index 1 (masks) with shape: \(masksOutputShapeDim)")
-        
-        let numSegmentationMasks = 32
-        let numClasses = boxesOutputShapeDim[1] - 4 - numSegmentationMasks
-        
-        NSLog("Model has \(numClasses) classes")
-        
-        let boxesOutput = ([Float](unsafeData: boxesOutputTensor.data) ?? [])
-        
-        // convert output to array of predictions
-        var predictions = getPredictionsFromOutput(
-            output: boxesOutput as [NSNumber],
-            rows: boxesOutputShapeDim[1], // xywh + numClasses + 32 masks
-            columns: boxesOutputShapeDim[2],
-            numberOfClasses: numClasses,
-            inputImgSize: inputSize
-        )
-        
-        NSLog("Got \(predictions.count) predicted boxes")
-        NSLog("Remove predictions with score lower than 0.3")
-        
-        // remove predictions with confidence score lower than threshold
-        predictions.removeAll { $0.score < 0.3 }
-        
-        NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
-        
-        guard !predictions.isEmpty else {
-            return
-        }
-        
-        NSLog("Perform non maximum suppression")
-        
-        // Group predictions by class
-        let groupedPredictions = Dictionary(grouping: predictions) { prediction in
-            prediction.classIndex
-        }
-        
-        var nmsPredictions: [Prediction] = []
-        let _ = groupedPredictions.mapValues { predictions in
-            nmsPredictions.append(
-                contentsOf: nonMaximumSuppression(
-                    predictions: predictions,
-                    iouThreshold: 0.6,
-                    limit: 100))
-        }
-        
-        NSLog("\(nmsPredictions.count) boxes left after performing nms with iou threshold of 0.6")
-        
-        guard !nmsPredictions.isEmpty else {
-            return
-        }
-        
-        self.predictions = nmsPredictions
-        
-        let masksOutput = ([Float](unsafeData: masksOutputTensor.data) ?? [])
-        let maskProtos = getMaskProtosFromOutput(
-            output: masksOutput as [NSNumber],
-            rows: masksOutputShapeDim[1],
-            columns: masksOutputShapeDim[2],
-            tubes: numSegmentationMasks
-        )
-
-        NSLog("Got \(maskProtos.count) mask protos")
-
-        let maskPredictions = masksFromProtos(
-            boxPredictions: nmsPredictions,
-            maskProtos: maskProtos,
-            maskSize: (width: masksOutputShapeDim[1], height: masksOutputShapeDim[2]),
-            originalImgSize: uiImage.size
-        )
-
-        self.maskPredictions = maskPredictions
     }
 }
 
@@ -885,4 +911,17 @@ extension ContentViewModel {
         
         return iou
     }
+}
+
+func writeToFile(_ str: String, fileName: String) {
+    let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+    let url = paths[0].appendingPathComponent("\(fileName).txt")
+
+    do {
+        try str.write(to: url, atomically: true, encoding: .utf8)
+        print(url)
+    } catch {
+        print(error.localizedDescription)
+    }
+    
 }

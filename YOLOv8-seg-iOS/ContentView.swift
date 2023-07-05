@@ -58,7 +58,9 @@ struct ContentView: View {
                     Spacer()
                     
                     Button {
-                        viewModel.runInference()
+                        Task {
+                            await viewModel.runInference()
+                        }
                     } label: {
                         Text("Run inference")
                     }
