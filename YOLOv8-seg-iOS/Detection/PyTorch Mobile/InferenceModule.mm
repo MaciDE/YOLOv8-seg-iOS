@@ -19,7 +19,7 @@
 /// - Parameters
 ///     - filePath: The model's location.
 ///     - inputSize: The model's input size.
-///     - outputSize The model's output sizes.
+///     - outputSizes: The model's output sizes.
 - (nullable instancetype)initWithFileAtPath:(NSString*)filePath
                                   inputSize:(CGSize)inputSize
                                 outputSizes:(NSArray<NSNumber*>*)outputSizes
