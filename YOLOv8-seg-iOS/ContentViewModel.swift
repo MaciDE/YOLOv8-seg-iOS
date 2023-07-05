@@ -75,7 +75,12 @@ class ContentViewModel: ObservableObject {
 // MARK: CoreML Inference
 extension ContentViewModel {
     private func runCoreMLInference() async {
-        guard let uiImage else { return }
+        guard let uiImage else {
+            await MainActor.run { [weak self] in
+                self?.processing = false
+            }
+            return
+        }
         
         NSLog("Start inference using CoreML")
         
@@ -290,7 +295,12 @@ extension ContentViewModel {
             }
         }
         
-        guard let uiImage else { return }
+        guard let uiImage else {
+            await MainActor.run { [weak self] in
+                self?.processing = false
+            }
+            return
+        }
         
         NSLog("Start inference using Vision")
         
@@ -346,7 +356,12 @@ extension ContentViewModel {
 // MARK: PyTorch Mobile Inference
 extension ContentViewModel {
     private func runPyTorchInference() async {
-        guard let uiImage else { return }
+        guard let uiImage else {
+            await MainActor.run { [weak self] in
+                self?.processing = false
+            }
+            return
+        }
         
         let inputSize = CGSize(width: 640, height: 640)
 
@@ -466,7 +481,12 @@ extension ContentViewModel {
 // MARK: TFLite Inference
 extension ContentViewModel {
     private func runTFLiteInference() async {
-        guard let uiImage else { return }
+        guard let uiImage else {
+            await MainActor.run { [weak self] in
+                self?.processing = false
+            }
+            return
+        }
         
         NSLog("Start inference using TFLite")
         

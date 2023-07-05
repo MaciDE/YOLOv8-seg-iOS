@@ -75,13 +75,11 @@ struct ContentView: View {
                 }
                 
                 Section {
-                    if !viewModel.predictions.isEmpty {
+                    if !viewModel.maskPredictions.isEmpty {
                         Button("Clear predictions") {
                             viewModel.predictions = []
                             viewModel.maskPredictions = []
                         }
-                    }
-                    if !viewModel.maskPredictions.isEmpty {
                         Button("Show all masks") {
                             presentMaskPreview.toggle()
                         }
