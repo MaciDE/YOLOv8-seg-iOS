@@ -113,10 +113,8 @@ extension ContentViewModel {
                 return
             }
             
-            // Boxes
-            let boxesOutput = outputs.var_1505 // (1,116,8400)
-            // Masks
-            let masksOutput = outputs.p // (1,32,160,160)
+            let boxesOutput = outputs.var_1505
+            let masksOutput = outputs.p
             
             writeToFile(Array(try! UnsafeBufferPointer<Float>(boxesOutput)).debugDescription, fileName: "boxesOutput")
             
@@ -125,10 +123,10 @@ extension ContentViewModel {
             
             NSLog("Model has \(numClasses) classes")
             
-            // convert output to array of predictions
+            // Convert output to array of predictions
             var predictions = getPredictionsFromOutput(
                 output: boxesOutput,
-                rows: Int(truncating: boxesOutput.shape[1]), // xywh + numClasses + 32 masks
+                rows: Int(truncating: boxesOutput.shape[1]),
                 columns: Int(truncating: boxesOutput.shape[2]),
                 numberOfClasses: numClasses,
                 inputImgSize: CGSize(width: imgsz.pixelsWide, height: imgsz.pixelsHigh)
@@ -137,7 +135,7 @@ extension ContentViewModel {
             NSLog("Got \(predictions.count) predicted boxes")
             NSLog("Remove predictions with score lower than 0.3")
             
-            // remove predictions with confidence score lower than threshold
+            // Remove predictions with confidence score lower than threshold
             predictions.removeAll { $0.score < 0.3 }
             
             NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
@@ -209,7 +207,7 @@ extension ContentViewModel {
                 return
             }
             
-            guard let boxes = boxesOutput.featureValue.multiArrayValue else { // (1,116,8400)
+            guard let boxes = boxesOutput.featureValue.multiArrayValue else {
                 return
             }
             
@@ -218,10 +216,10 @@ extension ContentViewModel {
             
             NSLog("Model has \(numClasses) classes")
             
-            // convert output to array of predictions
+            // Convert output to array of predictions
             var predictions = getPredictionsFromOutput(
                 output: boxes,
-                rows: Int(truncating: boxes.shape[1]), // xywh + numClasses + 32 masks
+                rows: Int(truncating: boxes.shape[1]),
                 columns: Int(truncating: boxes.shape[2]),
                 numberOfClasses: numClasses,
                 inputImgSize: CGSize(width: inputSize.pixelsWide, height: inputSize.pixelsHigh)
@@ -230,7 +228,7 @@ extension ContentViewModel {
             NSLog("Got \(predictions.count) predicted boxes")
             NSLog("Remove predictions with score lower than 0.3")
             
-            // remove predictions with confidence score lower than threshold
+            // Remove predictions with confidence score lower than threshold
             predictions.removeAll { $0.score < 0.3 }
             
             NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
@@ -265,7 +263,7 @@ extension ContentViewModel {
                 self?.predictions = nmsPredictions
             }
             
-            guard let masks = masksOutput.featureValue.multiArrayValue else { // (1,32,160,160)
+            guard let masks = masksOutput.featureValue.multiArrayValue else {
                 print("No masks output")
                 return
             }
@@ -399,18 +397,18 @@ extension ContentViewModel {
                 return
             }
             
-            let boxesOutput = outputs[0] // Shape = (1,116,8400)
-            let masksOutput = outputs[1] // Shape = (1,32,160,160)
+            let boxesOutput = outputs[0]
+            let masksOutput = outputs[1]
             
             let numSegmentationMasks = 32
             let numClasses = boxesOutputShape[1] - 4 - numSegmentationMasks
             
             NSLog("Model has \(numClasses) classes")
             
-            // convert output to array of predictions
+            // Convert output to array of predictions
             var predictions = getPredictionsFromOutput(
                 output: boxesOutput as [NSNumber],
-                rows: boxesOutputShape[1], // xywh + numClasses + 32 masks
+                rows: boxesOutputShape[1],
                 columns: boxesOutputShape[2],
                 numberOfClasses: numClasses,
                 inputImgSize: inputSize
@@ -419,7 +417,7 @@ extension ContentViewModel {
             NSLog("Got \(predictions.count) predicted boxes")
             NSLog("Remove predictions with score lower than 0.3")
             
-            // remove predictions with confidence score lower than threshold
+            // Remove predictions with confidence score lower than threshold
             predictions.removeAll { $0.score < 0.3 }
             
             NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
@@ -525,8 +523,8 @@ extension ContentViewModel {
                 return
             }
             
-            let boxesOutputTensor: Tensor // Shape = (1,116,1344)
-            let masksOutputTensor: Tensor // Shape = (1,64,64,32)
+            let boxesOutputTensor: Tensor
+            let masksOutputTensor: Tensor
             
             do {
                 try interpreter.copy(data, toInputAt: 0)
@@ -552,10 +550,10 @@ extension ContentViewModel {
             
             let boxesOutput = ([Float](unsafeData: boxesOutputTensor.data) ?? [])
             
-            // convert output to array of predictions
+            // Convert output to array of predictions
             var predictions = getPredictionsFromOutput(
                 output: boxesOutput as [NSNumber],
-                rows: boxesOutputShapeDim[1], // xywh + numClasses + 32 masks
+                rows: boxesOutputShapeDim[1],
                 columns: boxesOutputShapeDim[2],
                 numberOfClasses: numClasses,
                 inputImgSize: inputSize
@@ -564,7 +562,7 @@ extension ContentViewModel {
             NSLog("Got \(predictions.count) predicted boxes")
             NSLog("Remove predictions with score lower than 0.3")
             
-            // remove predictions with confidence score lower than threshold
+            // Remove predictions with confidence score lower than threshold
             predictions.removeAll { $0.score < 0.3 }
             
             NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
@@ -642,7 +640,6 @@ extension ContentViewModel {
         }
         var predictions = [Prediction]()
         for i in 0..<columns {
-            // box in xywh
             let centerX = Float(truncating: output[0*columns+i])
             let centerY = Float(truncating: output[1*columns+i])
             let width   = Float(truncating: output[2*columns+i])
@@ -661,15 +658,15 @@ extension ContentViewModel {
                 return (classIndex, heighestScore)
             }()
             
-            let maskScores = {
-                var scores: [Float] = []
+            let maskCoefficients = {
+                var coefficients: [Float] = []
                 for k in 0..<32 {
-                    scores.append(Float(truncating: output[(4+numberOfClasses+k)*columns+i]))
+                    coefficients.append(Float(truncating: output[(4+numberOfClasses+k)*columns+i]))
                 }
-                return scores
+                return coefficients
             }()
             
-            // box in xyxy
+            // Convert box from xywh to xyxy
             let left = centerX - width/2
             let top = centerY - height/2
             let right = centerX + width/2
@@ -679,7 +676,7 @@ extension ContentViewModel {
                 classIndex: classIndex,
                 score: score,
                 xyxy: (left, top, right, bottom),
-                maskScores: maskScores,
+                maskCoefficients: maskCoefficients,
                 inputImgSize: inputImgSize
             )
             predictions.append(prediction)
@@ -700,7 +697,6 @@ extension ContentViewModel {
         }
         var predictions = [Prediction]()
         for i in 0..<columns {
-            // box in xywh
             let centerX = Float(truncating: output[0*columns+i])
             let centerY = Float(truncating: output[1*columns+i])
             let width   = Float(truncating: output[2*columns+i])
@@ -719,15 +715,15 @@ extension ContentViewModel {
                 return (classIndex, heighestScore)
             }()
             
-            let maskScores = {
-                var scores: [Float] = []
+            let maskCoefficients = {
+                var coefficients: [Float] = []
                 for k in 0..<32 {
-                    scores.append(Float(truncating: output[(4+numberOfClasses+k)*columns+i]))
+                    coefficients.append(Float(truncating: output[(4+numberOfClasses+k)*columns+i]))
                 }
-                return scores
+                return coefficients
             }()
             
-            // box in xyxy
+            // Convert box from xywh to xyxy
             let left = centerX - width/2
             let top = centerY - height/2
             let right = centerX + width/2
@@ -737,7 +733,7 @@ extension ContentViewModel {
                 classIndex: classIndex,
                 score: score,
                 xyxy: (left, top, right, bottom),
-                maskScores: maskScores,
+                maskCoefficients: maskCoefficients,
                 inputImgSize: inputImgSize
             )
             predictions.append(prediction)
@@ -811,12 +807,11 @@ extension ContentViewModel {
         var maskPredictions: [MaskPrediction] = []
         for prediction in boxPredictions {
             
-            let maskProtoScores = prediction.maskScores
+            let maskCoefficients = prediction.maskCoefficients
             
             var finalMask: [Float] = []
             for (index, maskProto) in maskProtos.enumerated() {
-                // multiply mask proto with weight value
-                let weight = maskProtoScores[index]
+                let weight = maskCoefficients[index]
                 finalMask = finalMask.add(maskProto.map { Float($0) * weight })
             }
             

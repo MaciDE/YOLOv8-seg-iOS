@@ -16,7 +16,7 @@ struct Prediction {
     let classIndex: Int
     let score: Float
     let xyxy: XYXY
-    let maskScores: [Float]
+    let maskCoefficients: [Float]
     
     let inputImgSize: CGSize
 }
