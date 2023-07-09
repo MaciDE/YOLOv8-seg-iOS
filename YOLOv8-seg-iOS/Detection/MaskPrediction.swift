@@ -44,7 +44,7 @@ struct MaskPrediction: Identifiable {
         ) else { return nil }
         
         return UIImage(cgImage: rgbImageRef)
-            .resized(to: originalImgSize)
+//            .resized(to: originalImgSize)
     }
 }
 

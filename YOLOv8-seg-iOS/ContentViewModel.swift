@@ -804,6 +804,7 @@ extension ContentViewModel {
         maskSize: (width: Int, height: Int),
         originalImgSize: CGSize
     ) -> [MaskPrediction] {
+        NSLog("Generate masks from prototypes")
         var maskPredictions: [MaskPrediction] = []
         for prediction in boxPredictions {
             
@@ -815,30 +816,44 @@ extension ContentViewModel {
                 finalMask = finalMask.add(maskProto.map { Float($0) * weight })
             }
             
-            finalMask = finalMask.map { (sigmoid(value: $0) > 0.5 ? 1 : 0) * 255 }
+            NSLog("Apply sigmoid")
+            finalMask = finalMask.map { sigmoid(value: $0) }
             
-            let uint8Mask = finalMask.map { UInt8($0) }
+            NSLog("Crop mask to bounding box")
+            let croppedMask = crop(
+                mask: finalMask,
+                maskSize: maskSize,
+                box: prediction.xyxy)
+
+            let scale = max(
+                Int(originalImgSize.width) / maskSize.width,
+                Int(originalImgSize.height) / maskSize.height)
+            let targetSize = (
+                width: maskSize.width * scale,
+                height: maskSize.height * scale)
             
-            let croppedMask = crop(mask: uint8Mask, maskSize: maskSize, box: prediction.xyxy)
+            NSLog("Upsample mask with size \(maskSize) to \(targetSize)")
+            let upsampledMask = croppedMask.upsample(
+                originalSize: maskSize,
+                scale: scale
+            ).map { UInt8(($0 > 0.5 ? 1 : 0) * 255) }
             
             maskPredictions.append(
                 MaskPrediction(
                     classIndex: prediction.classIndex,
-                    mask: croppedMask,
-                    maskSize: maskSize,
-                    originalImgSize: originalImgSize
-                )
-            )
+                    mask: upsampledMask,
+                    maskSize: targetSize,
+                    originalImgSize: originalImgSize))
         }
         
         return maskPredictions
     }
     
     private func crop(
-        mask: [UInt8],
+        mask: [Float],
         maskSize: (width: Int, height: Int),
         box: XYXY
-    ) -> [UInt8] {
+    ) -> [Float] {
         let rows = maskSize.height
         let columns = maskSize.width
         
@@ -847,7 +862,7 @@ extension ContentViewModel {
         let x2 = Int(box.x2 / 4)+1
         let y2 = Int(box.y2 / 4)+1
         
-        var croppedArr: [UInt8] = []
+        var croppedArr: [Float] = []
         for row in 0..<rows {
             for column in 0..<columns {
                 if column >= x1 && column <= x2 && row >= y1 && row <= y2 {

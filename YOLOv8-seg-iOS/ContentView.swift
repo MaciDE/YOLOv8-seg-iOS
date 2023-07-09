@@ -100,16 +100,20 @@ struct ContentView: View {
     
     @ViewBuilder private func buildMaskImage(mask: UIImage?) -> some View {
         if let mask {
+//            Image(uiImage: mask)
+//                .resizable()
+//                .scaledToFit()
+//                .aspectRatio(contentMode: .fit)
             Image(uiImage: mask)
                 .resizable()
-                .scaledToFit()
-                .aspectRatio(contentMode: .fit)
+                .antialiased(false)
+                .interpolation(.none)
         }
     }
     
     @ViewBuilder private func buildMasksSheet() -> some View {
         ScrollView {
-            VStack(alignment: .center, spacing: 8) {
+            LazyVStack(alignment: .center, spacing: 8) {
                 ForEach(Array(viewModel.maskPredictions.enumerated()), id: \.offset) { index, maskPrediction in
                     VStack(alignment: .center) {
                         Group {
@@ -128,10 +132,32 @@ struct ContentView: View {
     }
     
     @ViewBuilder private func buildMaskOverlay() -> some View {
-        ZStack {
-            ForEach(Array((viewModel.maskPredictions).enumerated()), id: \.offset) { _, mask in
-                buildMaskImage(mask: mask.getMaskImage())
-            }
+//        ZStack {
+//            ForEach(Array((viewModel.maskPredictions).enumerated()), id: \.offset) { _, mask in
+//                buildMaskImage(mask: mask.getMaskImage())
+//            }
+//        }
+        buildMaskImage(mask: combineImages())
+    }
+    
+    private func combineImages() -> UIImage? {
+        NSLog("1")
+        guard let firstMask = viewModel.maskPredictions.first else { return nil }
+        
+        let size = CGSize(width: firstMask.maskSize.width, height: firstMask.maskSize.height)
+        UIGraphicsBeginImageContext(size)
+        
+        let areaSize = CGRect(x: 0, y: 0, width: size.width, height: size.height)
+        firstMask.getMaskImage()?.resized(to: size).draw(in: areaSize)
+        
+        for mask in viewModel.maskPredictions.dropFirst() {
+            mask.getMaskImage()?.resized(to: size).draw(in: areaSize, blendMode: .normal, alpha: 1.0)
         }
+        
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        NSLog("2")
+        return newImage
     }
 }
