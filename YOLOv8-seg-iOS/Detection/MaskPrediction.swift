@@ -13,10 +13,8 @@ struct MaskPrediction: Identifiable {
     
     let classIndex: Int
     
-    let mask: [UInt8] // (64, 64)
+    let mask: [UInt8]
     let maskSize: (width: Int, height: Int)
-   
-    let originalImgSize: CGSize
     
     func getMaskImage() -> UIImage? {
         guard !mask.isEmpty else { return nil }
@@ -44,7 +42,6 @@ struct MaskPrediction: Identifiable {
         ) else { return nil }
         
         return UIImage(cgImage: rgbImageRef)
-//            .resized(to: originalImgSize)
     }
 }
 

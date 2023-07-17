@@ -13,27 +13,13 @@ struct ContentView: View {
     
     @ObservedObject var viewModel: ContentViewModel
     
+    @State var showBoxes: Bool = true
+    @State var showMasks: Bool = true
     @State var presentMaskPreview: Bool = false
     
     var body: some View {
         VStack(spacing: 8) {
-            Group {
-                if let uiImage = viewModel.uiImage {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .scaledToFit()
-                        .aspectRatio(contentMode: .fit)
-                } else {
-                    Color
-                        .gray
-                        .aspectRatio(contentMode: .fit)
-                }
-            }
-            .overlay(buildMaskOverlay())
-            .overlay(
-                DetectionViewRepresentable(
-                    predictions: $viewModel.predictions))
-            .frame(maxHeight: 400)
+            imageView
             
             Form {
                 Section {
@@ -65,17 +51,19 @@ struct ContentView: View {
                         }
                     } label: {
                         HStack {
-                            Text("Run inference")
+                            Text(viewModel.status?.message ?? "Run inference")
                             Spacer()
                             if viewModel.processing {
                                 ProgressView()
                             }
                         }
-                    }.disabled(viewModel.processing)
+                    }.disabled(viewModel.processing || viewModel.uiImage == nil)
                 }
                 
                 Section {
                     if !viewModel.maskPredictions.isEmpty {
+                        Toggle("Show boxes:", isOn: $showBoxes)
+                        Toggle("Show masks:", isOn: $showMasks)
                         Button("Clear predictions") {
                             viewModel.predictions = []
                             viewModel.maskPredictions = []
@@ -98,12 +86,31 @@ struct ContentView: View {
         }
     }
     
+    var imageView: some View {
+        Group {
+            if let uiImage = viewModel.uiImage {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFit()
+                    .aspectRatio(contentMode: .fit)
+            } else {
+                Color
+                    .gray
+                    .aspectRatio(contentMode: .fit)
+            }
+        }
+        .overlay(
+            buildMaskImage(mask: viewModel.createCombinedMaskImage())
+                .opacity(showMasks ? 1 : 0))
+        .overlay(
+            DetectionViewRepresentable(
+                predictions: $viewModel.predictions)
+            .opacity(showBoxes ? 1 : 0))
+        .frame(maxHeight: 400)
+    }
+    
     @ViewBuilder private func buildMaskImage(mask: UIImage?) -> some View {
         if let mask {
-//            Image(uiImage: mask)
-//                .resizable()
-//                .scaledToFit()
-//                .aspectRatio(contentMode: .fit)
             Image(uiImage: mask)
                 .resizable()
                 .antialiased(false)
@@ -117,8 +124,12 @@ struct ContentView: View {
                 ForEach(Array(viewModel.maskPredictions.enumerated()), id: \.offset) { index, maskPrediction in
                     VStack(alignment: .center) {
                         Group {
-                            if let maskImg = maskPrediction.getMaskImage()?.resized(to: CGSize(width: 256, height: 256)) {
+                            if let maskImg = maskPrediction.getMaskImage() {
                                 Image(uiImage: maskImg)
+                                    .resizable()
+                                    .antialiased(false)
+                                    .interpolation(.none)
+                                    .aspectRatio(contentMode: .fit)
                                     .background(Color.black)
                             } else {
                                 let _ = print("maskImg is nil")
@@ -127,37 +138,9 @@ struct ContentView: View {
                         Divider()
                     }.frame(maxWidth: .infinity, alignment: .center)
                 }
-            }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding()
         }
-    }
-    
-    @ViewBuilder private func buildMaskOverlay() -> some View {
-//        ZStack {
-//            ForEach(Array((viewModel.maskPredictions).enumerated()), id: \.offset) { _, mask in
-//                buildMaskImage(mask: mask.getMaskImage())
-//            }
-//        }
-        buildMaskImage(mask: combineImages())
-    }
-    
-    private func combineImages() -> UIImage? {
-        NSLog("1")
-        guard let firstMask = viewModel.maskPredictions.first else { return nil }
-        
-        let size = CGSize(width: firstMask.maskSize.width, height: firstMask.maskSize.height)
-        UIGraphicsBeginImageContext(size)
-        
-        let areaSize = CGRect(x: 0, y: 0, width: size.width, height: size.height)
-        firstMask.getMaskImage()?.resized(to: size).draw(in: areaSize)
-        
-        for mask in viewModel.maskPredictions.dropFirst() {
-            mask.getMaskImage()?.resized(to: size).draw(in: areaSize, blendMode: .normal, alpha: 1.0)
-        }
-        
-        let newImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        NSLog("2")
-        return newImage
     }
 }

@@ -12,6 +12,37 @@ import SwiftUI
 import TensorFlowLite
 import Vision
 
+enum Status {
+    case preProcessing
+    case postProcessing
+    case inferencing
+    case parsingBoxPredictions
+    case performingNMS
+    case parsingMaskProtos
+    case generateMasksFromProtos
+}
+
+extension Status {
+    var message: String {
+        switch self {
+        case .preProcessing:
+            return "Preprocessing..."
+        case .postProcessing:
+            return "Postprocessing..."
+        case .inferencing:
+            return "Inferencing..."
+        case .parsingBoxPredictions:
+            return "Parsing box predictions..."
+        case .performingNMS:
+            return "Performing nms..."
+        case .parsingMaskProtos:
+            return "Parsing mask protos..."
+        case .generateMasksFromProtos:
+            return "Generate masks from protos..."
+        }
+    }
+}
+
 // MARK: ContentViewModel
 class ContentViewModel: ObservableObject {
     
@@ -24,7 +55,11 @@ class ContentViewModel: ObservableObject {
     @MainActor @Published var processing: Bool = false
     
     @MainActor @Published var predictions: [Prediction] = []
-    @MainActor @Published var maskPredictions: [MaskPrediction] = []
+    @Published var maskPredictions: [MaskPrediction] = []
+    
+    @Published var combinedMaskImage: UIImage?
+    
+    @MainActor @Published var status: Status? = nil
     
     init() {
         setupBindings()
@@ -35,18 +70,25 @@ class ContentViewModel: ObservableObject {
             guard let item else { return }
             
             Task { [weak self] in
+                
                 if let data = try? await item.loadTransferable(type: Data.self) {
                     if let uiImage = UIImage(data: data) {
                         await MainActor.run { [weak self] in
+                            self?.predictions = []
+                            self?.maskPredictions = []
                             self?.uiImage = uiImage
                         }
                         return
                     }
                 }
-
-                print("Failed")
             }
             
+        }.store(in: &cancellables)
+        
+        $maskPredictions.sink { [weak self] predictions in
+            guard !predictions.isEmpty else { return }
+            
+            self?.combinedMaskImage = self?.createCombinedMaskImage()
         }.store(in: &cancellables)
     }
     
@@ -69,6 +111,25 @@ class ContentViewModel: ObservableObject {
             }
             break
         }
+    }
+    
+    func createCombinedMaskImage() -> UIImage? {
+        guard let firstMask = maskPredictions.first else { return nil }
+        
+        let size = CGSize(width: firstMask.maskSize.width, height: firstMask.maskSize.height)
+        UIGraphicsBeginImageContext(size)
+        
+        let areaSize = CGRect(x: 0, y: 0, width: size.width, height: size.height)
+        firstMask.getMaskImage()?.draw(in: areaSize)
+        
+        for mask in maskPredictions.dropFirst() {
+            mask.getMaskImage()?.draw(in: areaSize, blendMode: .normal, alpha: 1.0)
+        }
+        
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return newImage
     }
 }
 
@@ -217,6 +278,7 @@ extension ContentViewModel {
             NSLog("Model has \(numClasses) classes")
             
             // Convert output to array of predictions
+            await setStatus(to: .parsingBoxPredictions)
             var predictions = getPredictionsFromOutput(
                 output: boxes,
                 rows: Int(truncating: boxes.shape[1]),
@@ -227,6 +289,8 @@ extension ContentViewModel {
 
             NSLog("Got \(predictions.count) predicted boxes")
             NSLog("Remove predictions with score lower than 0.3")
+            
+            await setStatus(to: .performingNMS)
             
             // Remove predictions with confidence score lower than threshold
             predictions.removeAll { $0.score < 0.3 }
@@ -268,6 +332,7 @@ extension ContentViewModel {
                 return
             }
             
+            await setStatus(to: .parsingMaskProtos)
             let maskProtos = getMaskProtosFromOutput(
                 output: masks,
                 rows: Int(truncating: masks.shape[3]),
@@ -277,6 +342,7 @@ extension ContentViewModel {
 
             NSLog("Got \(maskProtos.count) mask protos")
 
+            await setStatus(to: .generateMasksFromProtos)
             let maskPredictions = masksFromProtos(
                 boxPredictions: nmsPredictions,
                 maskProtos: maskProtos,
@@ -291,6 +357,7 @@ extension ContentViewModel {
                 self?.maskPredictions = maskPredictions
                 self?.processing = false
             }
+            await setStatus(to: nil)
         }
         
         guard let uiImage else {
@@ -299,6 +366,8 @@ extension ContentViewModel {
             }
             return
         }
+        
+        await setStatus(to: .preProcessing)
         
         NSLog("Start inference using Vision")
         
@@ -326,6 +395,7 @@ extension ContentViewModel {
                     
                     if let results = request.results {
                         Task {
+                            await self.setStatus(to: .postProcessing)
                             await handleResults(results, inputSize: imgsz, originalImgSize: uiImage.size)
                         }
                     }
@@ -344,6 +414,7 @@ extension ContentViewModel {
             orientation: uiImage.imageOrientation.toCGImagePropertyOrientation() ?? .up
         )
         do {
+            await setStatus(to: .inferencing)
             try imageRequestHandler.perform(requests)
         } catch {
             print(error)
@@ -360,6 +431,8 @@ extension ContentViewModel {
             }
             return
         }
+        
+        await setStatus(to: .preProcessing)
         
         let inputSize = CGSize(width: 640, height: 640)
 
@@ -393,12 +466,13 @@ extension ContentViewModel {
                 return
             }
             
+            await setStatus(to: .inferencing)
             guard let outputs = inferenceModule.detect(image: &pixelBuffer) else {
                 return
             }
+            await setStatus(to: .postProcessing)
             
             let boxesOutput = outputs[0]
-            let masksOutput = outputs[1]
             
             let numSegmentationMasks = 32
             let numClasses = boxesOutputShape[1] - 4 - numSegmentationMasks
@@ -406,6 +480,7 @@ extension ContentViewModel {
             NSLog("Model has \(numClasses) classes")
             
             // Convert output to array of predictions
+            await setStatus(to: .parsingBoxPredictions)
             var predictions = getPredictionsFromOutput(
                 output: boxesOutput as [NSNumber],
                 rows: boxesOutputShape[1],
@@ -416,6 +491,8 @@ extension ContentViewModel {
             
             NSLog("Got \(predictions.count) predicted boxes")
             NSLog("Remove predictions with score lower than 0.3")
+            
+            await setStatus(to: .performingNMS)
             
             // Remove predictions with confidence score lower than threshold
             predictions.removeAll { $0.score < 0.3 }
@@ -452,6 +529,8 @@ extension ContentViewModel {
                 self?.predictions = nmsPredictions
             }
             
+            let masksOutput = outputs[1]
+            await setStatus(to: .parsingMaskProtos)
             let maskProtos = getMaskProtosFromOutputPyTorch(
                 output: masksOutput as [NSNumber],
                 rows: masksOutputShape[2],
@@ -460,7 +539,7 @@ extension ContentViewModel {
             )
 
             NSLog("Got \(maskProtos.count) mask protos")
-
+            await setStatus(to: .generateMasksFromProtos)
             let maskPredictions = masksFromProtos(
                 boxPredictions: nmsPredictions,
                 maskProtos: maskProtos,
@@ -472,6 +551,7 @@ extension ContentViewModel {
                 self?.maskPredictions = maskPredictions
                 self?.processing = false
             }
+            await setStatus(to: nil)
         }
     }
 }
@@ -485,6 +565,8 @@ extension ContentViewModel {
             }
             return
         }
+        
+        await setStatus(to: .preProcessing)
         
         NSLog("Start inference using TFLite")
         
@@ -528,7 +610,9 @@ extension ContentViewModel {
             
             do {
                 try interpreter.copy(data, toInputAt: 0)
+                await setStatus(to: .inferencing)
                 try interpreter.invoke()
+                await setStatus(to: .postProcessing)
                 
                 boxesOutputTensor = try interpreter.output(at: 0)
                 masksOutputTensor = try interpreter.output(at: 1)
@@ -551,6 +635,7 @@ extension ContentViewModel {
             let boxesOutput = ([Float](unsafeData: boxesOutputTensor.data) ?? [])
             
             // Convert output to array of predictions
+            await setStatus(to: .parsingBoxPredictions)
             var predictions = getPredictionsFromOutput(
                 output: boxesOutput as [NSNumber],
                 rows: boxesOutputShapeDim[1],
@@ -561,6 +646,8 @@ extension ContentViewModel {
             
             NSLog("Got \(predictions.count) predicted boxes")
             NSLog("Remove predictions with score lower than 0.3")
+            
+            await setStatus(to: .performingNMS)
             
             // Remove predictions with confidence score lower than threshold
             predictions.removeAll { $0.score < 0.3 }
@@ -598,6 +685,7 @@ extension ContentViewModel {
             }
             
             let masksOutput = ([Float](unsafeData: masksOutputTensor.data) ?? [])
+            await setStatus(to: .parsingMaskProtos)
             let maskProtos = getMaskProtosFromOutput(
                 output: masksOutput as [NSNumber],
                 rows: masksOutputShapeDim[1],
@@ -606,7 +694,7 @@ extension ContentViewModel {
             )
             
             NSLog("Got \(maskProtos.count) mask protos")
-            
+            await setStatus(to: .generateMasksFromProtos)
             let maskPredictions = masksFromProtos(
                 boxPredictions: nmsPredictions,
                 maskProtos: maskProtos,
@@ -618,6 +706,7 @@ extension ContentViewModel {
                 self?.maskPredictions = maskPredictions
                 self?.processing = false
             }
+            await setStatus(to: nil)
         }
     }
 }
@@ -825,25 +914,27 @@ extension ContentViewModel {
                 maskSize: maskSize,
                 box: prediction.xyxy)
 
-            let scale = max(
-                Int(originalImgSize.width) / maskSize.width,
-                Int(originalImgSize.height) / maskSize.height)
+            let scale = min(
+                max(
+                    Int(originalImgSize.width) / maskSize.width,
+                    Int(originalImgSize.height) / maskSize.height),
+                6)
             let targetSize = (
                 width: maskSize.width * scale,
                 height: maskSize.height * scale)
             
             NSLog("Upsample mask with size \(maskSize) to \(targetSize)")
-            let upsampledMask = croppedMask.upsample(
-                originalSize: maskSize,
-                scale: scale
-            ).map { UInt8(($0 > 0.5 ? 1 : 0) * 255) }
+            let upsampledMask = croppedMask
+                .upsample(
+                    initialSize: maskSize,
+                    scale: scale)
+                .map { UInt8(($0 > 0.8 ? 1 : 0) * 255) }
             
             maskPredictions.append(
                 MaskPrediction(
                     classIndex: prediction.classIndex,
                     mask: upsampledMask,
-                    maskSize: targetSize,
-                    originalImgSize: originalImgSize))
+                    maskSize: targetSize))
         }
         
         return maskPredictions
@@ -857,10 +948,10 @@ extension ContentViewModel {
         let rows = maskSize.height
         let columns = maskSize.width
         
-        let x1 = Int(box.x1 / 4)+1
-        let y1 = Int(box.y1 / 4)+1
-        let x2 = Int(box.x2 / 4)+1
-        let y2 = Int(box.y2 / 4)+1
+        let x1 = Int(box.x1 / 4) + 1
+        let y1 = Int(box.y1 / 4)
+        let x2 = Int(box.x2 / 4) + 1
+        let y2 = Int(box.y2 / 4)
         
         var croppedArr: [Float] = []
         for row in 0..<rows {
@@ -952,6 +1043,13 @@ extension ContentViewModel {
         let iou = intersection / union
         
         return iou
+    }
+}
+
+extension ContentViewModel {
+    @MainActor
+    fileprivate func setStatus(to status: Status?) {
+        self.status = status
     }
 }
 

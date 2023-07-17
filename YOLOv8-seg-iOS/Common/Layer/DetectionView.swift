@@ -13,7 +13,6 @@ class DetectionView: UIView {
     
     override init(frame: CGRect) {
         detectionLayer = DetectionLayer()
-        detectionLayer.backgroundColor = UIColor.red.withAlphaComponent(0.1).cgColor
         
         super.init(frame: frame)
         
