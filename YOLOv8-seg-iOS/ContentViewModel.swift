@@ -52,6 +52,10 @@ class ContentViewModel: ObservableObject {
     @Published var uiImage: UIImage?
     @Published var selectedDetector: Int = 0
     
+    @Published var confidenceThreshold: Float = 0.3
+    @Published var iouThreshold: Float = 0.6
+    @Published var maskThreshold: Float = 0.5
+    
     @MainActor @Published var processing: Bool = false
     
     @MainActor @Published var predictions: [Prediction] = []
@@ -293,7 +297,7 @@ extension ContentViewModel {
             await setStatus(to: .performingNMS)
             
             // Remove predictions with confidence score lower than threshold
-            predictions.removeAll { $0.score < 0.3 }
+            predictions.removeAll { $0.score < confidenceThreshold }
             
             NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
             
@@ -313,7 +317,7 @@ extension ContentViewModel {
                 nmsPredictions.append(
                     contentsOf: nonMaximumSuppression(
                         predictions: predictions,
-                        iouThreshold: 0.6,
+                        iouThreshold: iouThreshold,
                         limit: 100))
             }
             
@@ -495,7 +499,7 @@ extension ContentViewModel {
             await setStatus(to: .performingNMS)
             
             // Remove predictions with confidence score lower than threshold
-            predictions.removeAll { $0.score < 0.3 }
+            predictions.removeAll { $0.score < confidenceThreshold }
             
             NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
             
@@ -515,7 +519,7 @@ extension ContentViewModel {
                 nmsPredictions.append(
                     contentsOf: nonMaximumSuppression(
                         predictions: predictions,
-                        iouThreshold: 0.6,
+                        iouThreshold: iouThreshold,
                         limit: 100))
             }
             
@@ -571,7 +575,7 @@ extension ContentViewModel {
         NSLog("Start inference using TFLite")
         
         let modelFilePath = Bundle.main.url(
-            forResource: "coco128-yolov8l-seg_float16",
+            forResource: "coco128-yolov8l-seg_float32",
             withExtension: "tflite")!.path
         
         Task {
@@ -650,7 +654,7 @@ extension ContentViewModel {
             await setStatus(to: .performingNMS)
             
             // Remove predictions with confidence score lower than threshold
-            predictions.removeAll { $0.score < 0.3 }
+            predictions.removeAll { $0.score < confidenceThreshold }
             
             NSLog("\(predictions.count) predicted boxes left after removing predictions with score lower than 0.3")
             
@@ -670,7 +674,7 @@ extension ContentViewModel {
                 nmsPredictions.append(
                     contentsOf: nonMaximumSuppression(
                         predictions: predictions,
-                        iouThreshold: 0.6,
+                        iouThreshold: iouThreshold,
                         limit: 100))
             }
             
@@ -928,7 +932,7 @@ extension ContentViewModel {
                 .upsample(
                     initialSize: maskSize,
                     scale: scale)
-                .map { UInt8(($0 > 0.8 ? 1 : 0) * 255) }
+                .map { UInt8(($0 > maskThreshold ? 1 : 0) * 255) }
             
             maskPredictions.append(
                 MaskPrediction(
@@ -949,8 +953,8 @@ extension ContentViewModel {
         let columns = maskSize.width
         
         let x1 = Int(box.x1 / 4) + 1
-        let y1 = Int(box.y1 / 4)
-        let x2 = Int(box.x2 / 4) + 1
+        let y1 = Int(box.y1 / 4) + 1
+        let x2 = Int(box.x2 / 4)
         let y2 = Int(box.y2 / 4)
         
         var croppedArr: [Float] = []

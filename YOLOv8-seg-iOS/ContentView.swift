@@ -45,6 +45,19 @@ struct ContentView: View {
                     }
                     .pickerStyle(.segmented)
                     
+                    VStack {
+                        Slider(value: $viewModel.confidenceThreshold, in: 0...1)
+                        Text("Confidence threshold: \(viewModel.confidenceThreshold, specifier: "%.2f")")
+                    }
+                    VStack {
+                        Slider(value: $viewModel.iouThreshold, in: 0...1)
+                        Text("IoU threshold: \(viewModel.iouThreshold, specifier: "%.2f")")
+                    }
+                    VStack {
+                        Slider(value: $viewModel.maskThreshold, in: 0...1)
+                        Text("Mask threshold: \(viewModel.maskThreshold, specifier: "%.2f")")
+                    }
+                    
                     Button {
                         Task {
                             await viewModel.runInference()

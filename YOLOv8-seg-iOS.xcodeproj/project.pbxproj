@@ -151,13 +151,13 @@
 		EA95A3DA2A16A47E00FF01B3 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				EA500EAF2A4C5F6C000AD60A /* UIColor+Random.swift */,
 				EA95A3DB2A16A4B300FF01B3 /* UIImage+Helpers.swift */,
 				EA726EF82A177FAC0027A1E2 /* Array+initFromUnsafeData.swift */,
 				EA33A2022A24BEC300B32B68 /* CGImage+pixelBufferFromCGImage.swift */,
 				EA3CBB702A31F1C00037750B /* Array+Subscript.swift */,
 				EA500EAD2A4C3FCD000AD60A /* Array+Add.swift */,
 				EA8F17E32A5AA0CF001F70F2 /* Array+Upsample.swift */,
-				EA500EAF2A4C5F6C000AD60A /* UIColor+Random.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
