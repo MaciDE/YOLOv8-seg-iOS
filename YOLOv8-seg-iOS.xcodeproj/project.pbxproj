@@ -8,6 +8,18 @@
 
 /* Begin PBXBuildFile section */
 		3BBA95DF2685CD0CF8507D19 /* Pods_YOLOv8_seg_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66FD704C5356EFFC5071E8D0 /* Pods_YOLOv8_seg_iOS.framework */; };
+		EA26D8042A659B2E002253A7 /* ulcus-yolov8s-seg.torchscript.ptl in Resources */ = {isa = PBXBuildFile; fileRef = EA26D7F62A659B2E002253A7 /* ulcus-yolov8s-seg.torchscript.ptl */; };
+		EA26D8052A659B2E002253A7 /* ulcus-yolov8n-seg.torchscript.ptl in Resources */ = {isa = PBXBuildFile; fileRef = EA26D7F72A659B2E002253A7 /* ulcus-yolov8n-seg.torchscript.ptl */; };
+		EA26D8062A659B2E002253A7 /* ulcus-yolov8m-seg.torchscript.ptl in Resources */ = {isa = PBXBuildFile; fileRef = EA26D7F82A659B2E002253A7 /* ulcus-yolov8m-seg.torchscript.ptl */; };
+		EA26D8072A659B2E002253A7 /* ulcus-yolov8l-seg.torchscript.ptl in Resources */ = {isa = PBXBuildFile; fileRef = EA26D7F92A659B2E002253A7 /* ulcus-yolov8l-seg.torchscript.ptl */; };
+		EA26D8082A659B2E002253A7 /* ulcus-yolov8s-seg.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = EA26D7FB2A659B2E002253A7 /* ulcus-yolov8s-seg.mlmodel */; };
+		EA26D8092A659B2E002253A7 /* ulcus-yolov8l-seg.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = EA26D7FC2A659B2E002253A7 /* ulcus-yolov8l-seg.mlmodel */; };
+		EA26D80A2A659B2E002253A7 /* ulcus-yolov8n-seg.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = EA26D7FD2A659B2E002253A7 /* ulcus-yolov8n-seg.mlmodel */; };
+		EA26D80B2A659B2E002253A7 /* ulcus-yolov8m-seg.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = EA26D7FE2A659B2E002253A7 /* ulcus-yolov8m-seg.mlmodel */; };
+		EA26D80C2A659B2E002253A7 /* ulcus-yolov8s-seg_float16.tflite in Resources */ = {isa = PBXBuildFile; fileRef = EA26D8002A659B2E002253A7 /* ulcus-yolov8s-seg_float16.tflite */; };
+		EA26D80D2A659B2E002253A7 /* ulcus-yolov8l-seg_float16.tflite in Resources */ = {isa = PBXBuildFile; fileRef = EA26D8012A659B2E002253A7 /* ulcus-yolov8l-seg_float16.tflite */; };
+		EA26D80E2A659B2E002253A7 /* ulcus-yolov8n-seg_float16.tflite in Resources */ = {isa = PBXBuildFile; fileRef = EA26D8022A659B2E002253A7 /* ulcus-yolov8n-seg_float16.tflite */; };
+		EA26D80F2A659B2E002253A7 /* ulcus-yolov8m-seg_float16.tflite in Resources */ = {isa = PBXBuildFile; fileRef = EA26D8032A659B2E002253A7 /* ulcus-yolov8m-seg_float16.tflite */; };
 		EA28EF7E2A5191CA003F8B0F /* coco128-yolov8l-seg.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = EA28EF7D2A5191CA003F8B0F /* coco128-yolov8l-seg.mlmodel */; };
 		EA28EF802A5191D2003F8B0F /* coco128-yolov8m-seg.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = EA28EF7F2A5191D2003F8B0F /* coco128-yolov8m-seg.mlmodel */; };
 		EA28EF822A5191DD003F8B0F /* coco128-yolov8n-seg.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = EA28EF812A5191DD003F8B0F /* coco128-yolov8n-seg.mlmodel */; };
@@ -22,6 +34,7 @@
 		EA95A3D72A169BE300FF01B3 /* ContentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA95A3D62A169BE300FF01B3 /* ContentViewModel.swift */; };
 		EA95A3DC2A16A4B300FF01B3 /* UIImage+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA95A3DB2A16A4B300FF01B3 /* UIImage+Helpers.swift */; };
 		EA95A3E62A16A64600FF01B3 /* InferenceModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = EA95A3E52A16A64600FF01B3 /* InferenceModule.mm */; };
+		EA9D57B92A65BA8500F58D19 /* UIColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA9D57B82A65BA8500F58D19 /* UIColor+Hex.swift */; };
 		EA9FD0C62A3F631000EA9425 /* coco128-yolov8n-seg_float16.tflite in Resources */ = {isa = PBXBuildFile; fileRef = EA9FD0C52A3F631000EA9425 /* coco128-yolov8n-seg_float16.tflite */; };
 		EA9FD0C82A3F642100EA9425 /* coco128-yolov8s-seg_float16.tflite in Resources */ = {isa = PBXBuildFile; fileRef = EA9FD0C72A3F642100EA9425 /* coco128-yolov8s-seg_float16.tflite */; };
 		EA9FD0CA2A3F651300EA9425 /* coco128-yolov8m-seg_float16.tflite in Resources */ = {isa = PBXBuildFile; fileRef = EA9FD0C92A3F651300EA9425 /* coco128-yolov8m-seg_float16.tflite */; };
@@ -44,6 +57,18 @@
 		0A0603FB0047B078B06750C9 /* Pods-YOLOv8-seg-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YOLOv8-seg-iOS.release.xcconfig"; path = "Target Support Files/Pods-YOLOv8-seg-iOS/Pods-YOLOv8-seg-iOS.release.xcconfig"; sourceTree = "<group>"; };
 		37CA6BAE7D4DA36801979C88 /* Pods-YOLOv8-seg-iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YOLOv8-seg-iOS.debug.xcconfig"; path = "Target Support Files/Pods-YOLOv8-seg-iOS/Pods-YOLOv8-seg-iOS.debug.xcconfig"; sourceTree = "<group>"; };
 		66FD704C5356EFFC5071E8D0 /* Pods_YOLOv8_seg_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_YOLOv8_seg_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		EA26D7F62A659B2E002253A7 /* ulcus-yolov8s-seg.torchscript.ptl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ulcus-yolov8s-seg.torchscript.ptl"; sourceTree = "<group>"; };
+		EA26D7F72A659B2E002253A7 /* ulcus-yolov8n-seg.torchscript.ptl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ulcus-yolov8n-seg.torchscript.ptl"; sourceTree = "<group>"; };
+		EA26D7F82A659B2E002253A7 /* ulcus-yolov8m-seg.torchscript.ptl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ulcus-yolov8m-seg.torchscript.ptl"; sourceTree = "<group>"; };
+		EA26D7F92A659B2E002253A7 /* ulcus-yolov8l-seg.torchscript.ptl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ulcus-yolov8l-seg.torchscript.ptl"; sourceTree = "<group>"; };
+		EA26D7FB2A659B2E002253A7 /* ulcus-yolov8s-seg.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "ulcus-yolov8s-seg.mlmodel"; sourceTree = "<group>"; };
+		EA26D7FC2A659B2E002253A7 /* ulcus-yolov8l-seg.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "ulcus-yolov8l-seg.mlmodel"; sourceTree = "<group>"; };
+		EA26D7FD2A659B2E002253A7 /* ulcus-yolov8n-seg.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "ulcus-yolov8n-seg.mlmodel"; sourceTree = "<group>"; };
+		EA26D7FE2A659B2E002253A7 /* ulcus-yolov8m-seg.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "ulcus-yolov8m-seg.mlmodel"; sourceTree = "<group>"; };
+		EA26D8002A659B2E002253A7 /* ulcus-yolov8s-seg_float16.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ulcus-yolov8s-seg_float16.tflite"; sourceTree = "<group>"; };
+		EA26D8012A659B2E002253A7 /* ulcus-yolov8l-seg_float16.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ulcus-yolov8l-seg_float16.tflite"; sourceTree = "<group>"; };
+		EA26D8022A659B2E002253A7 /* ulcus-yolov8n-seg_float16.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ulcus-yolov8n-seg_float16.tflite"; sourceTree = "<group>"; };
+		EA26D8032A659B2E002253A7 /* ulcus-yolov8m-seg_float16.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ulcus-yolov8m-seg_float16.tflite"; sourceTree = "<group>"; };
 		EA28EF7D2A5191CA003F8B0F /* coco128-yolov8l-seg.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "coco128-yolov8l-seg.mlmodel"; sourceTree = "<group>"; };
 		EA28EF7F2A5191D2003F8B0F /* coco128-yolov8m-seg.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "coco128-yolov8m-seg.mlmodel"; sourceTree = "<group>"; };
 		EA28EF812A5191DD003F8B0F /* coco128-yolov8n-seg.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "coco128-yolov8n-seg.mlmodel"; sourceTree = "<group>"; };
@@ -60,6 +85,7 @@
 		EA95A3E32A16A64100FF01B3 /* YOLOv8-seg-iOS-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "YOLOv8-seg-iOS-Bridging-Header.h"; sourceTree = "<group>"; };
 		EA95A3E42A16A64400FF01B3 /* InferenceModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InferenceModule.h; sourceTree = "<group>"; };
 		EA95A3E52A16A64600FF01B3 /* InferenceModule.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = InferenceModule.mm; sourceTree = "<group>"; };
+		EA9D57B82A65BA8500F58D19 /* UIColor+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Hex.swift"; sourceTree = "<group>"; };
 		EA9FD0C52A3F631000EA9425 /* coco128-yolov8n-seg_float16.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "coco128-yolov8n-seg_float16.tflite"; sourceTree = "<group>"; };
 		EA9FD0C72A3F642100EA9425 /* coco128-yolov8s-seg_float16.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "coco128-yolov8s-seg_float16.tflite"; sourceTree = "<group>"; };
 		EA9FD0C92A3F651300EA9425 /* coco128-yolov8m-seg_float16.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "coco128-yolov8m-seg_float16.tflite"; sourceTree = "<group>"; };
@@ -108,6 +134,49 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		EA26D7F42A659B2E002253A7 /* ulcus */ = {
+			isa = PBXGroup;
+			children = (
+				EA26D7F52A659B2E002253A7 /* PyTorch Mobile */,
+				EA26D7FA2A659B2E002253A7 /* Core ML */,
+				EA26D7FF2A659B2E002253A7 /* TensorFlow Lite */,
+			);
+			path = ulcus;
+			sourceTree = "<group>";
+		};
+		EA26D7F52A659B2E002253A7 /* PyTorch Mobile */ = {
+			isa = PBXGroup;
+			children = (
+				EA26D7F62A659B2E002253A7 /* ulcus-yolov8s-seg.torchscript.ptl */,
+				EA26D7F72A659B2E002253A7 /* ulcus-yolov8n-seg.torchscript.ptl */,
+				EA26D7F82A659B2E002253A7 /* ulcus-yolov8m-seg.torchscript.ptl */,
+				EA26D7F92A659B2E002253A7 /* ulcus-yolov8l-seg.torchscript.ptl */,
+			);
+			path = "PyTorch Mobile";
+			sourceTree = "<group>";
+		};
+		EA26D7FA2A659B2E002253A7 /* Core ML */ = {
+			isa = PBXGroup;
+			children = (
+				EA26D7FB2A659B2E002253A7 /* ulcus-yolov8s-seg.mlmodel */,
+				EA26D7FC2A659B2E002253A7 /* ulcus-yolov8l-seg.mlmodel */,
+				EA26D7FD2A659B2E002253A7 /* ulcus-yolov8n-seg.mlmodel */,
+				EA26D7FE2A659B2E002253A7 /* ulcus-yolov8m-seg.mlmodel */,
+			);
+			path = "Core ML";
+			sourceTree = "<group>";
+		};
+		EA26D7FF2A659B2E002253A7 /* TensorFlow Lite */ = {
+			isa = PBXGroup;
+			children = (
+				EA26D8002A659B2E002253A7 /* ulcus-yolov8s-seg_float16.tflite */,
+				EA26D8012A659B2E002253A7 /* ulcus-yolov8l-seg_float16.tflite */,
+				EA26D8022A659B2E002253A7 /* ulcus-yolov8n-seg_float16.tflite */,
+				EA26D8032A659B2E002253A7 /* ulcus-yolov8m-seg_float16.tflite */,
+			);
+			path = "TensorFlow Lite";
+			sourceTree = "<group>";
+		};
 		EA28EF7C2A5191B6003F8B0F /* Core ML */ = {
 			isa = PBXGroup;
 			children = (
@@ -143,6 +212,7 @@
 		EA95A3D92A16A43F00FF01B3 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				EA26D7F42A659B2E002253A7 /* ulcus */,
 				EA4B5AE72A3D99850033F9E7 /* coco128 */,
 			);
 			path = Models;
@@ -158,6 +228,7 @@
 				EA3CBB702A31F1C00037750B /* Array+Subscript.swift */,
 				EA500EAD2A4C3FCD000AD60A /* Array+Add.swift */,
 				EA8F17E32A5AA0CF001F70F2 /* Array+Upsample.swift */,
+				EA9D57B82A65BA8500F58D19 /* UIColor+Hex.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -314,15 +385,23 @@
 			buildActionMask = 2147483647;
 			files = (
 				EAC629F22A5170FC0099FFE1 /* coco128-yolov8s-seg.torchscript.ptl in Resources */,
+				EA26D8042A659B2E002253A7 /* ulcus-yolov8s-seg.torchscript.ptl in Resources */,
 				EAF9F1E42A168CC600D3DF49 /* Preview Assets.xcassets in Resources */,
 				EAC629F62A51711B0099FFE1 /* coco128-yolov8l-seg.torchscript.ptl in Resources */,
 				EAEE0BB52A4A095A00624C41 /* coco128-yolov8l-seg_float16.tflite in Resources */,
+				EA26D80E2A659B2E002253A7 /* ulcus-yolov8n-seg_float16.tflite in Resources */,
 				EA9FD0C62A3F631000EA9425 /* coco128-yolov8n-seg_float16.tflite in Resources */,
+				EA26D80C2A659B2E002253A7 /* ulcus-yolov8s-seg_float16.tflite in Resources */,
+				EA26D80F2A659B2E002253A7 /* ulcus-yolov8m-seg_float16.tflite in Resources */,
 				EAC629F42A51710B0099FFE1 /* coco128-yolov8m-seg.torchscript.ptl in Resources */,
+				EA26D80D2A659B2E002253A7 /* ulcus-yolov8l-seg_float16.tflite in Resources */,
 				EA9FD0C82A3F642100EA9425 /* coco128-yolov8s-seg_float16.tflite in Resources */,
+				EA26D8072A659B2E002253A7 /* ulcus-yolov8l-seg.torchscript.ptl in Resources */,
 				EAF9F1E12A168CC600D3DF49 /* Assets.xcassets in Resources */,
 				EA9FD0CA2A3F651300EA9425 /* coco128-yolov8m-seg_float16.tflite in Resources */,
+				EA26D8052A659B2E002253A7 /* ulcus-yolov8n-seg.torchscript.ptl in Resources */,
 				EA500EB22A4C7614000AD60A /* coco128-yolov8n-seg.torchscript.ptl in Resources */,
+				EA26D8062A659B2E002253A7 /* ulcus-yolov8m-seg.torchscript.ptl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -361,18 +440,23 @@
 				EAF9F1DF2A168CC400D3DF49 /* ContentView.swift in Sources */,
 				EAF9F1DD2A168CC400D3DF49 /* DemoApp.swift in Sources */,
 				EA95A3D72A169BE300FF01B3 /* ContentViewModel.swift in Sources */,
+				EA26D8082A659B2E002253A7 /* ulcus-yolov8s-seg.mlmodel in Sources */,
+				EA26D80A2A659B2E002253A7 /* ulcus-yolov8n-seg.mlmodel in Sources */,
 				EA95A3E62A16A64600FF01B3 /* InferenceModule.mm in Sources */,
 				EAA8E6B22A2DF47B00A47F96 /* DetectionLayer.swift in Sources */,
 				EA3CBB712A31F1C00037750B /* Array+Subscript.swift in Sources */,
+				EA26D8092A659B2E002253A7 /* ulcus-yolov8l-seg.mlmodel in Sources */,
 				EA33A2032A24BEC300B32B68 /* CGImage+pixelBufferFromCGImage.swift in Sources */,
 				EAB9CECF2A484A0F006345C2 /* Prediction.swift in Sources */,
 				EA8F17E42A5AA0CF001F70F2 /* Array+Upsample.swift in Sources */,
+				EA26D80B2A659B2E002253A7 /* ulcus-yolov8m-seg.mlmodel in Sources */,
 				EA28EF802A5191D2003F8B0F /* coco128-yolov8m-seg.mlmodel in Sources */,
 				EAA8E6B52A2DF4E000A47F96 /* DetectionView.swift in Sources */,
 				EA95A3DC2A16A4B300FF01B3 /* UIImage+Helpers.swift in Sources */,
 				EAB9CED12A484A23006345C2 /* MaskPrediction.swift in Sources */,
 				EA500EAE2A4C3FCD000AD60A /* Array+Add.swift in Sources */,
 				EA726EF92A177FAC0027A1E2 /* Array+initFromUnsafeData.swift in Sources */,
+				EA9D57B92A65BA8500F58D19 /* UIColor+Hex.swift in Sources */,
 				EA28EF842A5191E5003F8B0F /* coco128-yolov8s-seg.mlmodel in Sources */,
 				EAA8E6B72A2DF71C00A47F96 /* AnnotationLayer.swift in Sources */,
 				EA28EF7E2A5191CA003F8B0F /* coco128-yolov8l-seg.mlmodel in Sources */,

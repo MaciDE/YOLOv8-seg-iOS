@@ -21,74 +21,9 @@ struct ContentView: View {
         VStack(spacing: 8) {
             imageView
             
-            Form {
-                Section {
-                    PhotosPicker(
-                        "Pick Image",
-                        selection: $viewModel.imageSelection,
-                        matching: .images)
-                }
-                
-                Section {
-                    Picker(
-                        "Framework",
-                        selection: $viewModel.selectedDetector
-                    ) {
-                        Text("CoreML")
-                            .tag(0)
-                        Text("PyTorch")
-                            .tag(1)
-                        Text("TFLite")
-                            .tag(2)
-                        Text("Vision")
-                            .tag(3)
-                    }
-                    .pickerStyle(.segmented)
-                    
-                    VStack {
-                        Slider(value: $viewModel.confidenceThreshold, in: 0...1)
-                        Text("Confidence threshold: \(viewModel.confidenceThreshold, specifier: "%.2f")")
-                    }
-                    VStack {
-                        Slider(value: $viewModel.iouThreshold, in: 0...1)
-                        Text("IoU threshold: \(viewModel.iouThreshold, specifier: "%.2f")")
-                    }
-                    VStack {
-                        Slider(value: $viewModel.maskThreshold, in: 0...1)
-                        Text("Mask threshold: \(viewModel.maskThreshold, specifier: "%.2f")")
-                    }
-                    
-                    Button {
-                        Task {
-                            await viewModel.runInference()
-                        }
-                    } label: {
-                        HStack {
-                            Text(viewModel.status?.message ?? "Run inference")
-                            Spacer()
-                            if viewModel.processing {
-                                ProgressView()
-                            }
-                        }
-                    }.disabled(viewModel.processing || viewModel.uiImage == nil)
-                }
-                
-                Section {
-                    if !viewModel.maskPredictions.isEmpty {
-                        Toggle("Show boxes:", isOn: $showBoxes)
-                        Toggle("Show masks:", isOn: $showMasks)
-                        Button("Clear predictions") {
-                            viewModel.predictions = []
-                            viewModel.maskPredictions = []
-                        }
-                        Button("Show all masks") {
-                            presentMaskPreview.toggle()
-                        }
-                    }
-                }
-            }
-            .padding(.horizontal)
-            .padding(.top, 32)
+            settingsForm
+                .padding(.horizontal)
+                .padding(.top, 32)
             
             Spacer()
             
@@ -113,13 +48,83 @@ struct ContentView: View {
             }
         }
         .overlay(
-            buildMaskImage(mask: viewModel.createCombinedMaskImage())
-                .opacity(showMasks ? 1 : 0))
+            buildMaskImage(mask: viewModel.combinedMaskImage)
+                .opacity(showMasks ? 0.5 : 0))
         .overlay(
             DetectionViewRepresentable(
                 predictions: $viewModel.predictions)
             .opacity(showBoxes ? 1 : 0))
         .frame(maxHeight: 400)
+    }
+    
+    var settingsForm: some View {
+        Form {
+            Section {
+                PhotosPicker(
+                    "Pick Image",
+                    selection: $viewModel.imageSelection,
+                    matching: .images)
+            }
+            
+            Section {
+                Picker(
+                    "Framework",
+                    selection: $viewModel.selectedDetector
+                ) {
+                    Text("CoreML")
+                        .tag(0)
+                    Text("PyTorch")
+                        .tag(1)
+                    Text("TFLite")
+                        .tag(2)
+                    Text("Vision")
+                        .tag(3)
+                }
+                .pickerStyle(.segmented)
+                
+                VStack {
+                    Slider(value: $viewModel.confidenceThreshold, in: 0...1)
+                    Text("Confidence threshold: \(viewModel.confidenceThreshold, specifier: "%.2f")")
+                }
+                VStack {
+                    Slider(value: $viewModel.iouThreshold, in: 0...1)
+                    Text("IoU threshold: \(viewModel.iouThreshold, specifier: "%.2f")")
+                }
+                VStack {
+                    Slider(value: $viewModel.maskThreshold, in: 0...1)
+                    Text("Mask threshold: \(viewModel.maskThreshold, specifier: "%.2f")")
+                }
+                
+                Button {
+                    Task {
+                        await viewModel.runInference()
+                    }
+                } label: {
+                    HStack {
+                        Text(viewModel.status?.message ?? "Run inference")
+                        Spacer()
+                        if viewModel.processing {
+                            ProgressView()
+                        }
+                    }
+                }.disabled(viewModel.processing || viewModel.uiImage == nil)
+            }
+            
+            Section {
+                if !viewModel.maskPredictions.isEmpty {
+                    Toggle("Show boxes:", isOn: $showBoxes)
+                    Toggle("Show masks:", isOn: $showMasks)
+                    Button("Clear predictions") {
+                        viewModel.predictions = []
+                        viewModel.maskPredictions = []
+                        viewModel.combinedMaskImage = nil
+                    }
+                    Button("Show all masks") {
+                        presentMaskPreview.toggle()
+                    }
+                }
+            }
+        }
     }
     
     @ViewBuilder private func buildMaskImage(mask: UIImage?) -> some View {

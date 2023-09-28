@@ -92,7 +92,7 @@ class ContentViewModel: ObservableObject {
         $maskPredictions.sink { [weak self] predictions in
             guard !predictions.isEmpty else { return }
             
-            self?.combinedMaskImage = self?.createCombinedMaskImage()
+            self?.combinedMaskImage = predictions.combineToSingleImage()
         }.store(in: &cancellables)
     }
     
@@ -116,36 +116,12 @@ class ContentViewModel: ObservableObject {
             break
         }
     }
-    
-    func createCombinedMaskImage() -> UIImage? {
-        guard let firstMask = maskPredictions.first else { return nil }
-        
-        let size = CGSize(width: firstMask.maskSize.width, height: firstMask.maskSize.height)
-        UIGraphicsBeginImageContext(size)
-        
-        let areaSize = CGRect(x: 0, y: 0, width: size.width, height: size.height)
-        firstMask.getMaskImage()?.draw(in: areaSize)
-        
-        for mask in maskPredictions.dropFirst() {
-            mask.getMaskImage()?.draw(in: areaSize, blendMode: .normal, alpha: 1.0)
-        }
-        
-        let newImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        return newImage
-    }
 }
 
 // MARK: CoreML Inference
 extension ContentViewModel {
     private func runCoreMLInference() async {
-        guard let uiImage else {
-            await MainActor.run { [weak self] in
-                self?.processing = false
-            }
-            return
-        }
+        guard let uiImage else { return }
         
         NSLog("Start inference using CoreML")
         
@@ -169,6 +145,15 @@ extension ContentViewModel {
         }
     
         Task {
+            defer {
+                Task {
+                    await MainActor.run { [weak self] in
+                        self?.processing = false
+                    }
+                    await setStatus(to: nil)
+                }
+            }
+            
             let outputs: coco128_yolov8l_segOutput
             
             do {
@@ -256,7 +241,6 @@ extension ContentViewModel {
             
             await MainActor.run { [weak self, maskPredictions] in
                 self?.maskPredictions = maskPredictions
-                self?.processing = false
             }
         }
     }
@@ -266,6 +250,15 @@ extension ContentViewModel {
 extension ContentViewModel {
     private func runVisionInference() async {
         @Sendable func handleResults(_ results: [VNObservation], inputSize: MLImageConstraint, originalImgSize: CGSize) async {
+            defer {
+                Task {
+                    await MainActor.run { [weak self] in
+                        self?.processing = false
+                    }
+                    await setStatus(to: nil)
+                }
+            }
+            
             guard let boxesOutput = results[1, default: nil] as? VNCoreMLFeatureValueObservation,
                   let masksOutput = results[0, default: nil] as? VNCoreMLFeatureValueObservation
             else {
@@ -429,12 +422,7 @@ extension ContentViewModel {
 // MARK: PyTorch Mobile Inference
 extension ContentViewModel {
     private func runPyTorchInference() async {
-        guard let uiImage else {
-            await MainActor.run { [weak self] in
-                self?.processing = false
-            }
-            return
-        }
+        guard let uiImage else { return }
         
         await setStatus(to: .preProcessing)
         
@@ -454,6 +442,15 @@ extension ContentViewModel {
         }
         
         Task {
+            defer {
+                Task {
+                    await MainActor.run { [weak self] in
+                        self?.processing = false
+                    }
+                    await setStatus(to: nil)
+                }
+            }
+            
             guard let inferenceModule = InferenceModule(
                 fileAtPath: modelFilePath,
                 inputSize: inputSize,
@@ -553,9 +550,7 @@ extension ContentViewModel {
 
             await MainActor.run { [weak self, maskPredictions] in
                 self?.maskPredictions = maskPredictions
-                self?.processing = false
             }
-            await setStatus(to: nil)
         }
     }
 }
@@ -563,22 +558,26 @@ extension ContentViewModel {
 // MARK: TFLite Inference
 extension ContentViewModel {
     private func runTFLiteInference() async {
-        guard let uiImage else {
-            await MainActor.run { [weak self] in
-                self?.processing = false
-            }
-            return
-        }
+        guard let uiImage else { return }
         
         await setStatus(to: .preProcessing)
         
         NSLog("Start inference using TFLite")
         
         let modelFilePath = Bundle.main.url(
-            forResource: "coco128-yolov8l-seg_float32",
+            forResource: "coco128-yolov8l-seg_float16",
             withExtension: "tflite")!.path
         
         Task {
+            defer {
+                Task {
+                    await MainActor.run { [weak self] in
+                        self?.processing = false
+                    }
+                    await setStatus(to: nil)
+                }
+            }
+            
             let interpreter: Interpreter
             do {
                 interpreter = try Interpreter(
@@ -708,9 +707,7 @@ extension ContentViewModel {
             
             await MainActor.run { [weak self, maskPredictions] in
                 self?.maskPredictions = maskPredictions
-                self?.processing = false
             }
-            await setStatus(to: nil)
         }
     }
 }
@@ -929,6 +926,7 @@ extension ContentViewModel {
             
             NSLog("Upsample mask with size \(maskSize) to \(targetSize)")
             let upsampledMask = croppedMask
+                .map { Float(($0 > maskThreshold ? 1 : 0)) }
                 .upsample(
                     initialSize: maskSize,
                     scale: scale)
@@ -952,8 +950,8 @@ extension ContentViewModel {
         let rows = maskSize.height
         let columns = maskSize.width
         
-        let x1 = Int(box.x1 / 4) + 1
-        let y1 = Int(box.y1 / 4) + 1
+        let x1 = Int(box.x1 / 4)
+        let y1 = Int(box.y1 / 4)
         let x2 = Int(box.x2 / 4)
         let y2 = Int(box.y2 / 4)
         

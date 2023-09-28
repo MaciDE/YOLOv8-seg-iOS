@@ -45,7 +45,27 @@ struct MaskPrediction: Identifiable {
     }
 }
 
-let colors = (0..<80).map { _ in UIColor.random }
+let colors: [UIColor] = {
+    var colors = [
+        UIColor(hex: "#FF3838FF")!,
+        UIColor(hex: "#FF9D97FF")!,
+        UIColor(hex: "#FF701FFF")!,
+        UIColor(hex: "#FFB21DFF")!,
+        UIColor(hex: "#CFD231FF")!,
+        UIColor(hex: "#48F90AFF")!,
+        UIColor(hex: "#92CC17FF")!,
+        UIColor(hex: "#3DDB86FF")!,
+        UIColor(hex: "#1A9334FF")!,
+        UIColor(hex: "#00D4BBFF")!,
+        UIColor(hex: "#2C99A8FF")!,
+        UIColor(hex: "#00C2FFFF")!,
+        UIColor(hex: "#344593FF")!,
+        UIColor(hex: "#6473FFFF")!,
+        UIColor(hex: "#0018ECFF")!,
+    ]
+    colors.append(contentsOf: (0..<65).map { _ in UIColor.random })
+    return colors
+}()
 
 func colorizeMask(_ mask: [UInt8], color: UIColor) -> [UInt8] {
     var red: CGFloat = 0
@@ -65,11 +85,32 @@ func colorizeMask(_ mask: [UInt8], color: UIColor) -> [UInt8] {
                     UInt8(truncating: (red * 255) as NSNumber),
                     UInt8(truncating: (green * 255) as NSNumber),
                     UInt8(truncating: (blue * 255) as NSNumber),
-                    UInt8(truncating: (0.7 * 255) as NSNumber),
+                    255,
                 ]
             )
         }
     }
     
     return coloredMask
+}
+
+extension Collection where Element == MaskPrediction {
+    func combineToSingleImage() -> UIImage? {
+        guard let firstMask = self.first else { return nil }
+        
+        let size = CGSize(width: firstMask.maskSize.width, height: firstMask.maskSize.height)
+        UIGraphicsBeginImageContext(size)
+        
+        let areaSize = CGRect(x: 0, y: 0, width: size.width, height: size.height)
+        firstMask.getMaskImage()?.draw(in: areaSize)
+        
+        for mask in self.dropFirst() {
+            mask.getMaskImage()?.draw(in: areaSize, blendMode: .normal, alpha: 1.0)
+        }
+        
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return newImage
+    }
 }
