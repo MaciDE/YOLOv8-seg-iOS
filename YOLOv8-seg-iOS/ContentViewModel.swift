@@ -80,6 +80,7 @@ class ContentViewModel: ObservableObject {
                         await MainActor.run { [weak self] in
                             self?.predictions = []
                             self?.maskPredictions = []
+                            self?.combinedMaskImage = nil
                             self?.uiImage = uiImage
                         }
                         return
@@ -127,7 +128,7 @@ extension ContentViewModel {
         
         let config = MLModelConfiguration()
         
-        guard let model = try? coco128_yolov8l_seg(configuration: config) else {
+        guard let model = try? coco128_yolov8m_seg(configuration: config) else {
             NSLog("Failed to init model")
             return
         }
@@ -154,7 +155,7 @@ extension ContentViewModel {
                 }
             }
             
-            let outputs: coco128_yolov8l_segOutput
+            let outputs: coco128_yolov8m_segOutput
             
             do {
                 outputs = try model.prediction(image: pixelBuffer)
@@ -163,7 +164,7 @@ extension ContentViewModel {
                 return
             }
             
-            let boxesOutput = outputs.var_1505
+            let boxesOutput = outputs.var_1279
             let masksOutput = outputs.p
             
             writeToFile(Array(try! UnsafeBufferPointer<Float>(boxesOutput)).debugDescription, fileName: "boxesOutput")
@@ -372,7 +373,7 @@ extension ContentViewModel {
         do {
             let config = MLModelConfiguration()
             
-            guard let model = try? coco128_yolov8l_seg(configuration: config) else {
+            guard let model = try? coco128_yolov8m_seg(configuration: config) else {
                 print("failed to init model")
                 return
             }
@@ -434,7 +435,7 @@ extension ContentViewModel {
         NSLog("Start inference using PyTorch Mobile")
 
         guard let modelFilePath = Bundle.main.url(
-            forResource: "coco128-yolov8l-seg.torchscript",
+            forResource: "coco128-yolov8m-seg.torchscript",
             withExtension: "ptl"
         )?.path else {
             NSLog("Invalid file path for pytorch model")
@@ -565,7 +566,7 @@ extension ContentViewModel {
         NSLog("Start inference using TFLite")
         
         let modelFilePath = Bundle.main.url(
-            forResource: "coco128-yolov8l-seg_float16",
+            forResource: "coco128-yolov8m-seg_float16",
             withExtension: "tflite")!.path
         
         Task {
