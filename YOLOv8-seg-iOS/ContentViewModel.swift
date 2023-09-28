@@ -167,8 +167,6 @@ extension ContentViewModel {
             let boxesOutput = outputs.var_1279
             let masksOutput = outputs.p
             
-            writeToFile(Array(try! UnsafeBufferPointer<Float>(boxesOutput)).debugDescription, fileName: "boxesOutput")
-            
             let numSegmentationMasks = 32
             let numClasses = Int(truncating: boxesOutput.shape[1]) - 4 - numSegmentationMasks
             
@@ -1054,17 +1052,4 @@ extension ContentViewModel {
     fileprivate func setStatus(to status: Status?) {
         self.status = status
     }
-}
-
-func writeToFile(_ str: String, fileName: String) {
-    let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-    let url = paths[0].appendingPathComponent("\(fileName).txt")
-
-    do {
-        try str.write(to: url, atomically: true, encoding: .utf8)
-        print(url)
-    } catch {
-        print(error.localizedDescription)
-    }
-    
 }
