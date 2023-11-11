@@ -21,9 +21,3 @@ DerivedData
 Podfile.lock
 Pods
 *.xcworkspace
-
-# Models
-*.tflite
-*.torchscript
-*.ptl
-*.mlmodel
