@@ -6,7 +6,7 @@ target 'YOLOv8-seg-iOS' do
   use_frameworks!
 
   # Pods for YOLOv8-seg-iOS
-  pod 'LibTorch-Lite', :inhibit_warnings => true
-  pod 'TensorFlowLiteSwift', "~> 2.11.0", :subspecs => ['Metal', 'CoreML'], :inhibit_warnings => true
+  pod 'LibTorch-Lite', "1.13.0.1", :inhibit_warnings => true
+  pod 'TensorFlowLiteSwift', "~> 2.14.0", :subspecs => ['Metal', 'CoreML'], :inhibit_warnings => true
 
 end

@@ -566,7 +566,7 @@ extension ContentViewModel {
         let modelFilePath = Bundle.main.url(
             forResource: "coco128-yolov8n-seg_float16",
             withExtension: "tflite")!.path
-        
+
         Task {
             defer {
                 Task {
@@ -680,6 +680,21 @@ extension ContentViewModel {
             
             guard !nmsPredictions.isEmpty else {
                 return
+            }
+            
+            // Scale boxes to input size
+            nmsPredictions = nmsPredictions.map { prediction in
+                return Prediction(
+                    classIndex: prediction.classIndex,
+                    score: prediction.score,
+                    xyxy: (
+                        prediction.xyxy.x1 * Float(inputSize.width),
+                        prediction.xyxy.y1 * Float(inputSize.height),
+                        prediction.xyxy.x2 * Float(inputSize.width),
+                        prediction.xyxy.y2 * Float(inputSize.height)
+                    ),
+                    maskCoefficients: prediction.maskCoefficients,
+                    inputImgSize: prediction.inputImgSize)
             }
             
             await MainActor.run { [weak self, nmsPredictions] in
