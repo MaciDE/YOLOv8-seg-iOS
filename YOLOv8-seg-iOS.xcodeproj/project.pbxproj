@@ -15,6 +15,9 @@
 		EA500EAE2A4C3FCD000AD60A /* Array+Add.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA500EAD2A4C3FCD000AD60A /* Array+Add.swift */; };
 		EA500EB02A4C5F6C000AD60A /* UIColor+Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA500EAF2A4C5F6C000AD60A /* UIColor+Random.swift */; };
 		EA726EF92A177FAC0027A1E2 /* Array+initFromUnsafeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA726EF82A177FAC0027A1E2 /* Array+initFromUnsafeData.swift */; };
+		EA786B842D0756BE005FB35E /* coco128-yolo11n-seg.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = EA786B832D0756BE005FB35E /* coco128-yolo11n-seg.mlpackage */; };
+		EA786B862D0756D6005FB35E /* coco128-yolo11n-seg.torchscript.ptl in Resources */ = {isa = PBXBuildFile; fileRef = EA786B852D0756D6005FB35E /* coco128-yolo11n-seg.torchscript.ptl */; };
+		EA786B8A2D075757005FB35E /* coco128-yolo11n-seg_float16.tflite in Resources */ = {isa = PBXBuildFile; fileRef = EA786B892D075756005FB35E /* coco128-yolo11n-seg_float16.tflite */; };
 		EA8F17E42A5AA0CF001F70F2 /* Array+Upsample.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA8F17E32A5AA0CF001F70F2 /* Array+Upsample.swift */; };
 		EA95A3D72A169BE300FF01B3 /* ContentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA95A3D62A169BE300FF01B3 /* ContentViewModel.swift */; };
 		EA95A3DC2A16A4B300FF01B3 /* UIImage+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA95A3DB2A16A4B300FF01B3 /* UIImage+Helpers.swift */; };
@@ -42,6 +45,9 @@
 		EA500EAD2A4C3FCD000AD60A /* Array+Add.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Add.swift"; sourceTree = "<group>"; };
 		EA500EAF2A4C5F6C000AD60A /* UIColor+Random.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Random.swift"; sourceTree = "<group>"; };
 		EA726EF82A177FAC0027A1E2 /* Array+initFromUnsafeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+initFromUnsafeData.swift"; sourceTree = "<group>"; };
+		EA786B832D0756BE005FB35E /* coco128-yolo11n-seg.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = "coco128-yolo11n-seg.mlpackage"; sourceTree = "<group>"; };
+		EA786B852D0756D6005FB35E /* coco128-yolo11n-seg.torchscript.ptl */ = {isa = PBXFileReference; lastKnownFileType = file; path = "coco128-yolo11n-seg.torchscript.ptl"; sourceTree = "<group>"; };
+		EA786B892D075756005FB35E /* coco128-yolo11n-seg_float16.tflite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "coco128-yolo11n-seg_float16.tflite"; sourceTree = "<group>"; };
 		EA8F17E32A5AA0CF001F70F2 /* Array+Upsample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Upsample.swift"; sourceTree = "<group>"; };
 		EA95A3D62A169BE300FF01B3 /* ContentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentViewModel.swift; sourceTree = "<group>"; };
 		EA95A3DB2A16A4B300FF01B3 /* UIImage+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Helpers.swift"; sourceTree = "<group>"; };
@@ -95,6 +101,7 @@
 		EA28EF7C2A5191B6003F8B0F /* Core ML */ = {
 			isa = PBXGroup;
 			children = (
+				EA786B832D0756BE005FB35E /* coco128-yolo11n-seg.mlpackage */,
 				EA46C0162BACA3DD00E149F3 /* coco128-yolov8n-seg.mlpackage */,
 			);
 			path = "Core ML";
@@ -175,6 +182,7 @@
 		EAC629EF2A51706A0099FFE1 /* TensorFlow Lite */ = {
 			isa = PBXGroup;
 			children = (
+				EA786B892D075756005FB35E /* coco128-yolo11n-seg_float16.tflite */,
 				EA9FD0C52A3F631000EA9425 /* coco128-yolov8n-seg_float16.tflite */,
 			);
 			path = "TensorFlow Lite";
@@ -183,6 +191,7 @@
 		EAC629F02A5170830099FFE1 /* PyTorch Mobile */ = {
 			isa = PBXGroup;
 			children = (
+				EA786B852D0756D6005FB35E /* coco128-yolo11n-seg.torchscript.ptl */,
 				EA46C0182BACA3FF00E149F3 /* coco128-yolov8n-seg.torchscript.ptl */,
 			);
 			path = "PyTorch Mobile";
@@ -291,6 +300,8 @@
 			files = (
 				EAF9F1E42A168CC600D3DF49 /* Preview Assets.xcassets in Resources */,
 				EA9FD0C62A3F631000EA9425 /* coco128-yolov8n-seg_float16.tflite in Resources */,
+				EA786B862D0756D6005FB35E /* coco128-yolo11n-seg.torchscript.ptl in Resources */,
+				EA786B8A2D075757005FB35E /* coco128-yolo11n-seg_float16.tflite in Resources */,
 				EA46C0192BACA3FF00E149F3 /* coco128-yolov8n-seg.torchscript.ptl in Resources */,
 				EAF9F1E12A168CC600D3DF49 /* Assets.xcassets in Resources */,
 			);
@@ -335,6 +346,7 @@
 				EAA8E6B22A2DF47B00A47F96 /* DetectionLayer.swift in Sources */,
 				EA3CBB712A31F1C00037750B /* Array+Subscript.swift in Sources */,
 				EA33A2032A24BEC300B32B68 /* CGImage+pixelBufferFromCGImage.swift in Sources */,
+				EA786B842D0756BE005FB35E /* coco128-yolo11n-seg.mlpackage in Sources */,
 				EAB9CECF2A484A0F006345C2 /* Prediction.swift in Sources */,
 				EA8F17E42A5AA0CF001F70F2 /* Array+Upsample.swift in Sources */,
 				EAA8E6B52A2DF4E000A47F96 /* DetectionView.swift in Sources */,
