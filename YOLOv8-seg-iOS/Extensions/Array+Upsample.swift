@@ -5,126 +5,92 @@
 //  Created by Marcel Opitz on 09.07.23.
 //
 
-import Foundation
+import Metal
 
-extension Array where Element == UInt8 {
-    func upsample(
-        initialSize: (width: Int, height: Int),
-        targetSize: (width: Int, height: Int)? = nil,
-        scale: Int? = nil
-    ) -> [UInt8] {
-        let initialWidth = initialSize.width
-        let initialHeight = initialSize.height
+final class MetalHelper {
+    static let shared = MetalHelper()
 
-        let newSize: (width: Int, height: Int)? = {
-            if let targetSize {
-                return targetSize
-            } else if let scale {
-                return (width: initialWidth * scale, height: initialHeight * scale)
-            }
+    let device: MTLDevice
+    let commandQueue: MTLCommandQueue
+
+    private init?() {
+        guard let device = MTLCreateSystemDefaultDevice(),
+              let commandQueue = device.makeCommandQueue() else {
             return nil
-        }()
-
-        guard let newWidth = newSize?.width,
-              let newHeight = newSize?.height
-        else { return self }
-
-        guard !(initialWidth == newWidth && initialHeight == newHeight) else {
-            return self
         }
-
-        let scaleX = Double(newWidth) / Double(initialWidth)
-        let scaleY = Double(newHeight) / Double(initialHeight)
-
-        var upsampledArr = [UInt8](repeating: 0, count: newWidth * newHeight)
-
-        for y in 0..<newHeight {
-            for x in 0..<newWidth {
-                let sourceX = Double(x) / scaleX
-                let sourceY = Double(y) / scaleY
-
-                let x1 = Int(sourceX)
-                let y1 = Int(sourceY)
-                let x2 = Swift.min(x1 + 1, initialWidth - 1)
-                let y2 = Swift.min(y1 + 1, initialHeight - 1)
-
-                let q11 = self[y1 * initialWidth + x1]
-                let q12 = self[y2 * initialWidth + x1]
-                let q21 = self[y1 * initialWidth + x2]
-                let q22 = self[y2 * initialWidth + x2]
-
-                let xFraction = sourceX - Double(x1)
-                let yFraction = sourceY - Double(y1)
-
-                let interpolatedValue = Double(q11) * (1 - xFraction) * (1 - yFraction) +
-                                        Double(q21) * xFraction * (1 - yFraction) +
-                                        Double(q12) * (1 - xFraction) * yFraction +
-                                        Double(q22) * xFraction * yFraction
-
-                upsampledArr[y * newWidth + x] = UInt8(interpolatedValue)
-            }
-        }
-        return upsampledArr
+        self.device = device
+        self.commandQueue = commandQueue
     }
 }
+
+import Accelerate
+import Metal
+import MetalPerformanceShaders
 
 extension Array where Element == Float {
     func upsample(
         initialSize: (width: Int, height: Int),
         targetSize: (width: Int, height: Int)? = nil,
-        scale: Int? = nil
-    ) -> [Float] {
+        scale: Int? = nil,
+        maskThreshold: Float
+    ) -> [UInt8] {
         let initialWidth = initialSize.width
         let initialHeight = initialSize.height
 
-        let newSize: (width: Int, height: Int)? = {
-            if let targetSize {
-                return targetSize
-            } else if let scale {
-                return (width: initialWidth * scale, height: initialHeight * scale)
-            }
-            return nil
-        }()
+        guard let metal = MetalHelper.shared else { return [] }
 
-        guard let newWidth = newSize?.width,
-              let newHeight = newSize?.height
-        else { return self }
+        let inputArray: [UInt8] = self.map { UInt8(clamping: Int($0 * 255)) }
 
-        guard !(initialWidth == newWidth && initialHeight == newHeight) else {
-            return self
+        guard let newSize = targetSize ?? (scale.map { (initialWidth * $0, initialHeight * $0) }) else {
+            return inputArray
         }
 
-        let scaleX = Double(newWidth) / Double(initialWidth)
-        let scaleY = Double(newHeight) / Double(initialHeight)
+        let newWidth = newSize.0
+        let newHeight = newSize.1
 
-        var upsampledArr = [Float](repeating: 0, count: newWidth * newHeight)
-
-        for y in 0..<newHeight {
-            for x in 0..<newWidth {
-                let sourceX = Double(x) / scaleX
-                let sourceY = Double(y) / scaleY
-
-                let x1 = Int(sourceX)
-                let y1 = Int(sourceY)
-                let x2 = Swift.min(x1 + 1, initialWidth - 1)
-                let y2 = Swift.min(y1 + 1, initialHeight - 1)
-
-                let q11 = self[y1 * initialWidth + x1]
-                let q12 = self[y2 * initialWidth + x1]
-                let q21 = self[y1 * initialWidth + x2]
-                let q22 = self[y2 * initialWidth + x2]
-
-                let xFraction = sourceX - Double(x1)
-                let yFraction = sourceY - Double(y1)
-
-                let interpolatedValue = Double(q11) * (1 - xFraction) * (1 - yFraction) +
-                                        Double(q21) * xFraction * (1 - yFraction) +
-                                        Double(q12) * (1 - xFraction) * yFraction +
-                                        Double(q22) * xFraction * yFraction
-
-                upsampledArr[y * newWidth + x] = Float(interpolatedValue)
-            }
+        guard initialWidth != newWidth || initialHeight != newHeight else {
+            return inputArray
         }
-        return upsampledArr
+
+        func createTexture(from array: [UInt8], width: Int, height: Int) -> MTLTexture? {
+            let descriptor = MTLTextureDescriptor()
+            descriptor.pixelFormat = .r8Unorm
+            descriptor.width = width
+            descriptor.height = height
+            descriptor.usage = [.shaderRead, .shaderWrite]
+
+            guard let texture = metal.device.makeTexture(descriptor: descriptor) else { return nil }
+
+            let region = MTLRegionMake2D(0, 0, width, height)
+            texture.replace(region: region, mipmapLevel: 0, withBytes: array, bytesPerRow: width)
+
+            return texture
+        }
+
+        func readTextureData(texture: MTLTexture) -> [UInt8] {
+            let byteCount = texture.width * texture.height
+            var outputArray = [UInt8](repeating: 0, count: byteCount)
+            let region = MTLRegionMake2D(0, 0, texture.width, texture.height)
+            texture.getBytes(&outputArray, bytesPerRow: texture.width, from: region, mipmapLevel: 0)
+            return outputArray
+        }
+
+        guard let inputTexture = createTexture(from: inputArray, width: initialWidth, height: initialHeight),
+              let outputTexture = createTexture(from: [UInt8](repeating: 0, count: newWidth * newHeight), width: newWidth, height: newHeight),
+              let commandBuffer = metal.commandQueue.makeCommandBuffer() else {
+            return inputArray
+        }
+
+        let bilinear = MPSImageBilinearScale(device: metal.device)
+        bilinear.encode(commandBuffer: commandBuffer, sourceTexture: inputTexture, destinationTexture: outputTexture)
+
+        commandBuffer.commit()
+        commandBuffer.waitUntilCompleted()
+
+        let result = readTextureData(texture: outputTexture)
+        let thresholdValue = UInt8(clamping: Int(maskThreshold * 255))
+
+        let grayscaleArray: [UInt8] = result.map { $0 > thresholdValue ? 255 : 0 }
+        return grayscaleArray
     }
 }

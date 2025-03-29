@@ -7,8 +7,6 @@
 
 import Foundation
 
-typealias XYXY = (x1: Float, y1: Float, x2: Float, y2: Float)
-
 // MARK: Prediction
 struct Prediction {
     let id = UUID()
@@ -19,4 +17,19 @@ struct Prediction {
     let maskCoefficients: [Float]
     
     let inputImgSize: CGSize
+  
+    static var zero: Prediction {
+        return Prediction(
+            classIndex: 0,
+            score: 0,
+            xyxy: .init(x1: 0, y1: 0, x2: 0, y2: 0),
+            maskCoefficients: [],
+            inputImgSize: .zero)
+    }
+}
+
+extension XYXY: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return "(\(x1), \(y1)), (\(x2), \(y2))"
+    }
 }

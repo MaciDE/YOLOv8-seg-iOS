@@ -11,6 +11,7 @@ import CoreImage
 
 struct ContentView: View {
     
+    @Environment(\.displayScale) var displayScale
     @ObservedObject var viewModel: ContentViewModel
     
     @State var showBoxes: Bool = true
@@ -20,13 +21,28 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 8) {
             imageView
+              .safeAreaPadding(.top)
+              .contextMenu {
+                  Button(action: {
+                    if let selectedImage = viewModel.uiImage, !showBoxes {
+                      let scale = 400 / selectedImage.size.height
+                      let renderer = ImageRenderer(
+                        content: imageView.frame(
+                          width: selectedImage.size.width * scale,
+                          height: selectedImage.size.height * scale))
+                        renderer.scale = displayScale
+                        if let renderedImage = renderer.uiImage {
+                            print(renderedImage.size)
+                            UIImageWriteToSavedPhotosAlbum(renderedImage, nil, nil, nil)
+                        }
+                    }
+                  }) {
+                      Label("Save to camera roll", systemImage: "square.and.arrow.down")
+                  }
+              }
             
             settingsForm
-                .padding(.horizontal)
-                .padding(.top, 32)
-            
-            Spacer()
-            
+              .safeAreaPadding(.top, 32)
         }
         .background(Color(UIColor.systemGroupedBackground))
         .sheet(isPresented: $presentMaskPreview) {
@@ -67,21 +83,6 @@ struct ContentView: View {
             }
             
             Section {
-                Picker(
-                    "Framework",
-                    selection: $viewModel.selectedDetector
-                ) {
-                    Text("CoreML")
-                        .tag(0)
-                    Text("PyTorch")
-                        .tag(1)
-                    Text("TFLite")
-                        .tag(2)
-                    Text("Vision")
-                        .tag(3)
-                }
-                .pickerStyle(.segmented)
-                
                 VStack {
                     Slider(value: $viewModel.confidenceThreshold, in: 0...1)
                     Text("Confidence threshold: \(viewModel.confidenceThreshold, specifier: "%.2f")")
@@ -149,6 +150,13 @@ struct ContentView: View {
                                     .interpolation(.none)
                                     .aspectRatio(contentMode: .fit)
                                     .background(Color.black)
+                                    .contextMenu {
+                                        Button(action: {
+                                            UIImageWriteToSavedPhotosAlbum(maskImg, nil, nil, nil)
+                                        }) {
+                                            Label("Save to camera roll", systemImage: "square.and.arrow.down")
+                                        }
+                                    }
                             } else {
                                 let _ = print("maskImg is nil")
                             }

@@ -5,7 +5,7 @@
 //  Created by Marcel Opitz on 25.06.23.
 //
 
-import Foundation
+import UIKit
 
 // MARK: MaskPrediction
 struct MaskPrediction: Identifiable {
