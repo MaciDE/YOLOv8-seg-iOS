@@ -5,6 +5,5 @@ YOLO11 / YOLOv8 ([Ultralytics](https://github.com/ultralytics/ultralytics)) inst
 
 ## Usage:
 1. Clone repository
-2. Install pods via CocoaPods
-3. Add your exported YOLO11-seg or YOLOv8-seg models to the project
-4. Update the file paths inside `ContentViewModel.swift` with new file names or init new Core ML model
+2. Add your exported YOLO11-seg or YOLOv8-seg models to the project
+3. Update the file paths inside `ContentViewModel.swift` with new file names or init new Core ML model
