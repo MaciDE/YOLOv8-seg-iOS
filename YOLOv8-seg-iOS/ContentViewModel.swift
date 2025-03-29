@@ -1041,24 +1041,18 @@ extension ContentViewModel {
     }
     
     private func IOU(a: XYXY, b: XYXY) -> Float {
-        // Calculate the intersection coordinates
         let x1 = max(a.x1, b.x1)
         let y1 = max(a.y1, b.y1)
-        let x2 = max(a.x2, b.x2)
-        let y2 = max(a.y1, b.y2)
-        
-        // Calculate the intersection area
+        let x2 = min(a.x2, b.x2)
+        let y2 = min(a.y2, b.y2)
+
         let intersection = max(x2 - x1, 0) * max(y2 - y1, 0)
-        
-        // Calculate the union area
+
         let area1 = (a.x2 - a.x1) * (a.y2 - a.y1)
         let area2 = (b.x2 - b.x1) * (b.y2 - b.y1)
         let union = area1 + area2 - intersection
-        
-        // Calculate the IoU score
-        let iou = intersection / union
-        
-        return iou
+
+        return intersection / union
     }
 }
 
