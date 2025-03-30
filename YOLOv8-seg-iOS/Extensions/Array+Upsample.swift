@@ -49,7 +49,9 @@ extension Array where Element == Float {
         let newHeight = newSize.1
 
         guard initialWidth != newWidth || initialHeight != newHeight else {
-            return inputArray
+            let thresholdValue = UInt8(clamping: Int(maskThreshold * 255))
+            let grayscaleArray: [UInt8] = inputArray.map { $0 > thresholdValue ? 255 : 0 }
+            return grayscaleArray
         }
 
         func createTexture(from array: [UInt8], width: Int, height: Int) -> MTLTexture? {
