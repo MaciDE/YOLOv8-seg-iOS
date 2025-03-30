@@ -65,7 +65,7 @@ struct ContentView: View {
         }
         .overlay(
             buildMaskImage(mask: viewModel.combinedMaskImage)
-                .opacity(showMasks ? 0.5 : 0))
+                .opacity(showMasks ? 0.7 : 0))
         .overlay(
             DetectionViewRepresentable(
                 predictions: $viewModel.predictions)

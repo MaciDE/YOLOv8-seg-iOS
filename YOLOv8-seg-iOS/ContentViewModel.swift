@@ -185,8 +185,8 @@ extension ContentViewModel {
             await setStatus(to: .parsingMaskProtos)
             let maskProtos = getMaskProtosFromOutput(
                 output: masks,
-                rows: Int(truncating: masks.shape[3]),
-                columns: Int(truncating: masks.shape[2]),
+                rows: Int(truncating: masks.shape[2]),
+                columns: Int(truncating: masks.shape[3]),
                 tubes: Int(truncating: masks.shape[1])
             )
 
@@ -356,19 +356,27 @@ extension ContentViewModel {
         tubes: Int
     ) -> [[Float]] {
         NSLog(#function)
-        let maskSize = rows * columns
-        let strideTube = output.strides[1].intValue
-
+        let strides = output.strides.map { $0.intValue }
+        let strideTube = strides[1]
+        let strideRow = strides[2]
+        let strideCol = strides[3]
+        
         let pointer = output.dataPointer.assumingMemoryBound(to: Float.self)
+        let maskSize = rows * columns
 
         var masks = Array(repeating: [Float](repeating: 0, count: maskSize), count: tubes)
 
         masks.withUnsafeMutableBufferPointer { maskBuffer in
             DispatchQueue.concurrentPerform(iterations: tubes) { tube in
-                let srcPointer = pointer.advanced(by: tube * strideTube)
-
                 let destPointer = maskBuffer[tube].withUnsafeMutableBufferPointer { $0.baseAddress! }
-                memcpy(destPointer, srcPointer, maskSize * MemoryLayout<Float>.size)
+
+                for row in 0..<rows {
+                    let rowOffset = row * columns
+                    for col in 0..<columns {
+                        let index = tube * strideTube + row * strideRow + col * strideCol
+                        destPointer[rowOffset + col] = pointer[index]
+                    }
+                }
             }
         }
 
