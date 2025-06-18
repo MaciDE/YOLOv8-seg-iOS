@@ -120,17 +120,15 @@ extension ContentViewModel {
                     await setStatus(to: nil)
                 }
             }
-            
-            guard let boxesOutput = results[1, default: nil] as? VNCoreMLFeatureValueObservation,
-                  let masksOutput = results[0, default: nil] as? VNCoreMLFeatureValueObservation
-            else {
-                return
-            }
+          
+            guard let boxesOutput = results.first(where: { ($0 as? VNCoreMLFeatureValueObservation)?.featureValue.multiArrayValue?.shape.count == 3 }) as? VNCoreMLFeatureValueObservation,
+                  let masksOutput = results.first(where: { ($0 as? VNCoreMLFeatureValueObservation)?.featureValue.multiArrayValue?.shape.count == 4}) as? VNCoreMLFeatureValueObservation
+            else { return }
             
             guard let boxes = boxesOutput.featureValue.multiArrayValue else {
                 return
             }
-            
+          
             let numSegmentationMasks = 32
             let numClasses = Int(truncating: boxes.shape[1]) - 4 - numSegmentationMasks
             
@@ -226,7 +224,7 @@ extension ContentViewModel {
         do {
             let config = MLModelConfiguration()
             
-            guard let model = try? coco128_yolo11n_seg(configuration: config) else {
+            guard let model = try? best_goal_seg_n_CK_1888_555(configuration: config) else {
                 print("failed to init model")
                 return
             }
@@ -439,21 +437,21 @@ extension ContentViewModel {
                   y2: prediction.xyxy.y2 / 4
                 ))
           
-            let scale = min(
-                max(
-                    Int(originalImgSize.width) / maskSize.width,
-                    Int(originalImgSize.height) / maskSize.height),
-                6)
+            let widthScale = Int(originalImgSize.width) / maskSize.width
+            let heightScale = Int(originalImgSize.height) / maskSize.height
+            let maxPossibleScale = max(widthScale, heightScale)
+            let clampedScale = max(min(maxPossibleScale, 6), 1)
+
             let targetSize = (
-                width: maskSize.width * scale,
-                height: maskSize.height * scale)
-            
+                width: maskSize.width * clampedScale,
+                height: maskSize.height * clampedScale
+            )
             NSLog("Upsample mask with size \(maskSize) to \(targetSize)")
             let upsampledMask: [UInt8] = croppedFinalMask
                 .map { Float(($0 > maskThreshold ? 1 : 0)) }
                 .upsample(
                     initialSize: maskSize,
-                    scale: scale,
+                    scale: clampedScale,
                     maskThreshold: maskThreshold)
             
             NSLog("Crop mask to bounding box")
@@ -461,10 +459,10 @@ extension ContentViewModel {
                 mask: upsampledMask,
                 maskSize: targetSize,
                 box: .init(
-                    x1: (prediction.xyxy.x1 / 4) * Float(scale),
-                    y1: (prediction.xyxy.y1 / 4) * Float(scale),
-                    x2: (prediction.xyxy.x2 / 4) * Float(scale),
-                    y2: (prediction.xyxy.y2 / 4) * Float(scale)
+                    x1: (prediction.xyxy.x1 / 4) * Float(clampedScale),
+                    y1: (prediction.xyxy.y1 / 4) * Float(clampedScale),
+                    x2: (prediction.xyxy.x2 / 4) * Float(clampedScale),
+                    y2: (prediction.xyxy.y2 / 4) * Float(clampedScale)
                 ))
             
             maskPredictions.append(
