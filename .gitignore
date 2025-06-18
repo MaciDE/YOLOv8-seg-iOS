@@ -21,3 +21,7 @@ DerivedData
 Podfile.lock
 Pods
 *.xcworkspace
+
+# Models
+YOLOv8-seg-iOS/Detection/Models/*
+YOLOv8-seg-iOS/Detection/Models/coco128/**
