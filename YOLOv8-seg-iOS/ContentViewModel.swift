@@ -224,7 +224,7 @@ extension ContentViewModel {
         do {
             let config = MLModelConfiguration()
             
-            guard let model = try? best_goal_seg_n_CK_1888_555(configuration: config) else {
+            guard let model = try? coco128_yolo11n_seg(configuration: config) else {
                 print("failed to init model")
                 return
             }
